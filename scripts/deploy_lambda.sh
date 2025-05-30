@@ -13,20 +13,40 @@ zip -r ../$ZIP_FILE get_stock_price.py > /dev/null
 
 cd ..
 
+# Deploy the zip file to AWS Lambda
+echo "🚀 Deploying Lambda function..."
+
 # Check if Lambda function exists
 if aws lambda get-function --function-name "$LAMBDA_NAME" > /dev/null 2>&1; then
   echo "✅ Updating existing Lambda function..."
-  aws lambda update-function-code \
+  if aws lambda update-function-code \
     --function-name "$LAMBDA_NAME" \
-    --zip-file fileb://$ZIP_FILE
+    --zip-file fileb://$ZIP_FILE; then
+    echo "✅ Lambda function deployed successfully."
+    # Clean up zip file
+    echo "🧹 Cleaning up..."
+    rm -f $ZIP_FILE
+    echo "✅ Done."
+  else
+    echo "❌ Lambda deployment failed!"
+    echo "⚠️ Leaving $ZIP_FILE for inspection."
+    exit 1
+  fi
 else
   echo "🚀 Creating new Lambda function..."
-  aws lambda create-function \
+  if aws lambda create-function \
     --function-name "$LAMBDA_NAME" \
     --runtime "$RUNTIME" \
     --role "$ROLE_ARN" \
     --handler "$HANDLER" \
-    --zip-file fileb://$ZIP_FILE
+    --zip-file fileb://$ZIP_FILE; then
+    echo "✅ Lambda function created successfully."
+    echo "🧹 Cleaning up..."
+    rm -f $ZIP_FILE
+    echo "✅ Done."
+  else
+    echo "❌ Lambda creation failed!"
+    echo "⚠️ Leaving $ZIP_FILE for inspection."
+    exit 1
+  fi
 fi
-
-echo "✅ Done."

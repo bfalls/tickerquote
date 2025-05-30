@@ -16,6 +16,14 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v3
 
+    - name: Check environment variables
+      run: |
+        echo "Region: $AWS_REGION"
+        if [ -z "$AWS_REGION" ]; then
+          echo "❌ AWS_REGION is not set"
+          exit 1
+        fi
+
     - name: Zip Lambda function
       run: |
         cd lambda
@@ -25,7 +33,7 @@ jobs:
       env:
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        AWS_REGION: ${{ secrets.AWS_REGION }}
+        AWS_REGION: us-east-1
       run: |
         aws lambda update-function-code \
           --function-name GetStockPrice \

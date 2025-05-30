@@ -12,6 +12,11 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
 
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_REGION: us-east-1
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v3
@@ -30,10 +35,6 @@ jobs:
         zip -r ../lambda_payload.zip get_stock_price.py
 
     - name: Deploy to AWS Lambda
-      env:
-        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        AWS_REGION: us-east-1
       run: |
         aws lambda update-function-code \
           --function-name GetStockPrice \

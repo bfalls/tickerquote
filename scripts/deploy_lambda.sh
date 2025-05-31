@@ -7,7 +7,7 @@ SRC_DIR="lambda_code"
 BUILD_DIR="build_lambda"
 HANDLER="evaluate_stock_strategy.lambda_handler"
 RUNTIME="python3.11"
-ROLE_ARN="arn:aws:iam::406222517046:role/GetStockPrice-role-ewo18gz7"
+ROLE_ARN="arn:aws:iam::406222517046:role/service-role/GetStockPrice-role-ewo18gz7"
 AWS_REGION="us-east-1"
 
 echo "📦 Cleaning previous build..."

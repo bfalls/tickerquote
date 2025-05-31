@@ -37,6 +37,6 @@ jobs:
     - name: Deploy to AWS Lambda
       run: |
         aws lambda update-function-code \
-          --function-name GetStockPrice \
+          --function-name EvaluateStockStrategy \
           --zip-file fileb://lambda_payload.zip \
           --region $AWS_REGION

@@ -18,7 +18,7 @@ echo "📥 Installing dependencies..."
 python3 -m pip install requests -t $BUILD_DIR
 
 echo "📁 Copying source code..."
-rsync -av --exclude='__pycache__' $SRC_DIR $BUILD_DIR/
+rsync -av --exclude='__pycache__' $SRC_DIR/ $BUILD_DIR/
 
 echo "🧵 Zipping Lambda package..."
 cd $BUILD_DIR

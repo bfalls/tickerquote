@@ -3,7 +3,7 @@ name: Deploy Lambda
 on:
   push:
     paths:
-      - 'lambda/**'
+      - 'lambda_code/**'
     branches:
       - main
   workflow_dispatch:

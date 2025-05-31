@@ -34,9 +34,16 @@ jobs:
         cd lambda_code
         zip -r ../lambda_payload.zip evaluate_stock_strategy.py
 
-    - name: Deploy to AWS Lambda
-      run: |
-        aws lambda update-function-code \
-          --function-name EvaluateStockStrategy \
-          --zip-file fileb://lambda_payload.zip \
-          --region $AWS_REGION
+    - name: Deploy via custom script
+      run: ./scripts/deploy_lambda.sh
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        AWS_REGION: ${{ env.AWS_REGION }}
+
+    # - name: Deploy to AWS Lambda
+    #   run: |
+    #     aws lambda update-function-code \
+    #       --function-name EvaluateStockStrategy \
+    #       --zip-file fileb://lambda_payload.zip \
+    #       --region $AWS_REGION

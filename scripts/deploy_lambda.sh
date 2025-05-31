@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e
 
-LAMBDA_NAME="GetStockPrice"
+LAMBDA_NAME="EvaluateStockStrategy"
 ZIP_FILE="lambda_payload.zip"
 SRC_DIR="lambda_code"
 BUILD_DIR="build_lambda"

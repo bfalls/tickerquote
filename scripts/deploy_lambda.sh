@@ -28,8 +28,10 @@ cd ..
 echo "🚀 Deploying Lambda function..."
 
 echo "🔍 Checking if function '$LAMBDA_NAME' exists in region '$AWS_REGION'..."
+aws lambda get-function --function-name "$LAMBDA_NAME" --region "$AWS_REGION" > /dev/null 2>&1
+FOUND=$?
 
-if aws lambda get-function --function-name "$LAMBDA_NAME" --region "$AWS_REGION" > /dev/null 2>&1; then
+if [ "$FOUND" -eq 0 ]; then
   echo "✅ Updating existing Lambda function..."
   if aws lambda update-function-code \
     --function-name "$LAMBDA_NAME" \
@@ -44,7 +46,7 @@ if aws lambda get-function --function-name "$LAMBDA_NAME" --region "$AWS_REGION"
     exit 1
   fi
 else
-  echo "🚀 Creating new Lambda function..."
+  echo "🚀 Lambda function does not exist. Creating..."
   if aws lambda create-function \
     --function-name "$LAMBDA_NAME" \
     --runtime "$RUNTIME" \

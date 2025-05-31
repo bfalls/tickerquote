@@ -32,7 +32,9 @@ jobs:
       run: python3 -m pip install -r requirements-dev.txt
 
     - name: Run unit tests
-      run: python3 -m pytest lambda_code/tests
+      run: |
+        export PYTHONPATH=$PYTHONPATH:$(pwd)/lambda_code
+        python3 -m pytest lambda_code/tests
 
     - name: Check environment variables
       run: |

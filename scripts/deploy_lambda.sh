@@ -8,6 +8,7 @@ BUILD_DIR="build_lambda"
 HANDLER="evaluate_stock_strategy.lambda_handler"
 RUNTIME="python3.11"
 ROLE_ARN="arn:aws:iam::406222517046:role/GetStockPrice-role-ewo18gz7"
+AWS_REGION="us-east-1"
 
 echo "📦 Cleaning previous build..."
 rm -rf $BUILD_DIR $ZIP_FILE
@@ -26,7 +27,9 @@ cd ..
 
 echo "🚀 Deploying Lambda function..."
 
-if aws lambda get-function --function-name "$LAMBDA_NAME" > /dev/null 2>&1; then
+echo "🔍 Checking if function '$LAMBDA_NAME' exists in region '$AWS_REGION'..."
+
+if aws lambda get-function --function-name "$LAMBDA_NAME" --region "$AWS_REGION" > /dev/null 2>&1; then
   echo "✅ Updating existing Lambda function..."
   if aws lambda update-function-code \
     --function-name "$LAMBDA_NAME" \

@@ -1,4 +1,4 @@
-from lambda_code.strategies import STRATEGY_MAP
+from strategies import STRATEGY_MAP
 
 def evaluate_strategy(ticker: str, strategy_code: str) -> dict:
     strategy_fn = STRATEGY_MAP.get(strategy_code)

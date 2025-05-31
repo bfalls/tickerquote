@@ -1,5 +1,5 @@
 import json
-from lambda_code.evaluate_strategy import evaluate_strategy
+from evaluate_strategy import evaluate_strategy
 
 def lambda_handler(event, context):
     body = json.loads(event.get("body", "{}"))

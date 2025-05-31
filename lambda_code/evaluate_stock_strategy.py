@@ -1,5 +1,5 @@
 import json
-from lambda_code.evaluate_strategy import evaluate_strategy
+from evaluate_strategy import evaluate_strategy
 import os
 
 API_KEY = os.environ['ALPHA_VANTAGE_KEY']

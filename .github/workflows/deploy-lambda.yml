@@ -31,7 +31,7 @@ jobs:
 
     - name: Zip Lambda function
       run: |
-        cd lambda
+        cd lambda_code
         zip -r ../lambda_payload.zip evaluate_stock_strategy.py
 
     - name: Deploy to AWS Lambda

@@ -1,35 +1,43 @@
 #!/bin/bash
+set -e
 
 LAMBDA_NAME="GetStockPrice"
 ZIP_FILE="lambda_payload.zip"
-HANDLER="get_stock_price.lambda_handler"
-RUNTIME="python3.13"
-ROLE_ARN="arn:aws:lambda:us-east-1:406222517046:function:GetStockPrice"
+SRC_DIR="lambda_code"
+BUILD_DIR="build_lambda"
+HANDLER="evaluate_stock_strategy.lambda_handler"
+RUNTIME="python3.11"
+ROLE_ARN="arn:aws:iam::406222517046:role/GetStockPrice-role-ewo18gz7"
 
-cd lambda
+echo "📦 Cleaning previous build..."
+rm -rf $BUILD_DIR $ZIP_FILE
+mkdir -p $BUILD_DIR
 
-# Create deployment package
-zip -r ../$ZIP_FILE get_stock_price.py > /dev/null
+echo "📥 Installing dependencies..."
+python3 -m pip install requests -t $BUILD_DIR
 
+echo "📁 Copying source code..."
+cp -r $SRC_DIR/* $BUILD_DIR/
+
+echo "🧵 Zipping Lambda package..."
+cd $BUILD_DIR
+zip -r ../$ZIP_FILE . > /dev/null
 cd ..
 
-# Deploy the zip file to AWS Lambda
 echo "🚀 Deploying Lambda function..."
 
-# Check if Lambda function exists
 if aws lambda get-function --function-name "$LAMBDA_NAME" > /dev/null 2>&1; then
   echo "✅ Updating existing Lambda function..."
   if aws lambda update-function-code \
     --function-name "$LAMBDA_NAME" \
     --zip-file fileb://$ZIP_FILE; then
     echo "✅ Lambda function deployed successfully."
-    # Clean up zip file
     echo "🧹 Cleaning up..."
-    rm -f $ZIP_FILE
+    rm -rf $ZIP_FILE $BUILD_DIR
     echo "✅ Done."
   else
     echo "❌ Lambda deployment failed!"
-    echo "⚠️ Leaving $ZIP_FILE for inspection."
+    echo "⚠️ Leaving build artifacts for inspection."
     exit 1
   fi
 else
@@ -42,11 +50,11 @@ else
     --zip-file fileb://$ZIP_FILE; then
     echo "✅ Lambda function created successfully."
     echo "🧹 Cleaning up..."
-    rm -f $ZIP_FILE
+    rm -rf $ZIP_FILE $BUILD_DIR
     echo "✅ Done."
   else
     echo "❌ Lambda creation failed!"
-    echo "⚠️ Leaving $ZIP_FILE for inspection."
+    echo "⚠️ Leaving build artifacts for inspection."
     exit 1
   fi
 fi

@@ -32,7 +32,7 @@ jobs:
     - name: Zip Lambda function
       run: |
         cd lambda
-        zip -r ../lambda_payload.zip get_stock_price.py
+        zip -r ../lambda_payload.zip evaluate_stock_strategy.py
 
     - name: Deploy to AWS Lambda
       run: |

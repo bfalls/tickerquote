@@ -34,8 +34,8 @@ if aws lambda get-function --function-name "$LAMBDA_NAME" --region "$AWS_REGION"
     --function-name "$LAMBDA_NAME" \
     --zip-file fileb://$ZIP_FILE; then
     echo "✅ Lambda function deployed successfully."
-    echo "🧹 Cleaning up..."
-    rm -rf $ZIP_FILE $BUILD_DIR
+    # echo "🧹 Cleaning up..."
+    # rm -rf $ZIP_FILE $BUILD_DIR
     echo "✅ Done."
   else
     echo "❌ Lambda deployment failed!"
@@ -51,8 +51,8 @@ else
     --handler "$HANDLER" \
     --zip-file fileb://$ZIP_FILE; then
     echo "✅ Lambda function created successfully."
-    echo "🧹 Cleaning up..."
-    rm -rf $ZIP_FILE $BUILD_DIR
+    # echo "🧹 Cleaning up..."
+    # rm -rf $ZIP_FILE $BUILD_DIR
     echo "✅ Done."
   else
     echo "❌ Lambda creation failed!"

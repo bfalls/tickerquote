@@ -43,6 +43,7 @@ jobs:
         run: python scripts/merge_indexes.py
 
       - name: Commit changes if any
+        id: commit_step
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "github-actions[bot]@users.noreply.github.com"
@@ -50,7 +51,15 @@ jobs:
 
           if git diff --cached --quiet; then
             echo "No changes to commit."
+            echo "committed=false" >> $GITHUB_OUTPUT
           else
             git commit -m "chore: auto-update stock index data"
             git push
+            echo "committed=true" >> $GITHUB_OUTPUT
           fi
+
+      - name: Upload updated JSON to S3
+        if: steps.commit_step.outputs.committed == 'true'
+        run: |
+          echo "Uploading updated us_index_constituents.json to S3..."
+          aws s3 cp data/us_index_constituents.json s3://tickerquote-index-data/us_index_constituents.json --acl private

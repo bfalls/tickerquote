@@ -6339,8 +6339,8 @@
     "GICS Sector": "Testing",
     "GICS Sub-Industry": "Mocking",
     "Headquarters Location": "Fake City",
-    "Date added": None,
-    "Founded": None,
+    "Date added": null,
+    "Founded": null,
     "indexes": ["S&P 500"]
     }
   ]

@@ -51,7 +51,7 @@ jobs:
         zip -r ../lambda_payload.zip evaluate_stock_strategy.py
 
     - name: Upload Lambda ZIP artifact
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: lambda_payload
         path: lambda_payload.zip

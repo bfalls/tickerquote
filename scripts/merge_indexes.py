@@ -92,7 +92,14 @@ hash_file = output_dir / ".companyhash"
 output_file = output_dir / "us_index_constituents.json"
 
 # Sort companies by symbol and prepare data
-companies = sorted(merged.values(), key=lambda x: x.get("Symbol") or "")
+# companies = sorted(merged.values(), key=lambda x: x.get("Symbol") or "")
+companies = sorted(
+    [
+        {**company, "indexes": sorted(company["indexes"])}
+        for company in merged.values()
+    ],
+    key=lambda x: x.get("Symbol") or ""
+)
 
 # Hash only the company data (stable ordering, no version)
 company_string = json.dumps(companies, sort_keys=True).encode('utf-8')

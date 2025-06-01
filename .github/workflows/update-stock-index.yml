@@ -40,3 +40,4 @@ jobs:
           else
             git commit -m "chore: auto-update stock index data"
             git push
+          fi

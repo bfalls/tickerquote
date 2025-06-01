@@ -1,0 +1,42 @@
+name: Update Stock Index Data
+
+on:
+  push:
+    branches: [main]  # or your default branch
+  workflow_dispatch:
+  schedule:
+    - cron: '0 6 * * 1'
+    - cron: '0 6 * * 4'
+
+jobs:
+  update-index-data:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
+      - name: Install dependencies
+        run: pip install pandas
+
+      - name: Run merge_indexes.py
+        run: python scripts/merge_indexes.py
+
+      - name: Commit changes if any
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add data/us_index_constituents.json data/.companyhash
+
+          if git diff --cached --quiet; then
+            echo "No changes to commit."
+          else
+            git commit -m "chore: auto-update stock index data"
+            git push

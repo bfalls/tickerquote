@@ -45,17 +45,6 @@ jobs:
           exit 1
         fi
 
-    - name: Zip Lambda function
-      run: |
-        cd lambda_code
-        zip -r ../lambda_payload.zip evaluate_stock_strategy.py
-
-    - name: Upload Lambda ZIP artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: lambda_payload
-        path: lambda_payload.zip
-
     - name: Deploy via custom script
       run: ./scripts/deploy_lambda.sh
       env:
@@ -63,3 +52,8 @@ jobs:
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         AWS_REGION: ${{ env.AWS_REGION }}
 
+    - name: Upload Lambda ZIP artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: lambda_payload
+        path: lambda_payload.zip

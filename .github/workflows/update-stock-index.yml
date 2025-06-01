@@ -10,7 +10,7 @@ on:
 
 permissions:
   contents: write # needed for auto-commit
-  
+
 jobs:
   update-index-data:
     runs-on: ubuntu-latest
@@ -28,6 +28,16 @@ jobs:
 
       - name: Install dependencies
         run: pip install -r scripts/requirements.txt
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          aws-access-key-id: ${{ secrets.AWS_INDEX_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_INDEX_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+
+      - name: Verify AWS identity
+        run: aws sts get-caller-identity
 
       - name: Run merge_indexes.py
         run: python scripts/merge_indexes.py

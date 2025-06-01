@@ -120,5 +120,20 @@ if data_hash != previous_hash:
 
     hash_file.write_text(data_hash)
     print(f"✅ Change detected — JSON written to {output_file.name} with version {version}")
+
+    # Auto commit changes using subprocess
+    import subprocess
+
+    subprocess.run(["git", "config", "user.name", "github-actions[bot]"], check=True)
+    subprocess.run(["git", "config", "user.email", "github-actions[bot]@users.noreply.github.com"], check=True)
+    subprocess.run(["git", "add", str(output_file), str(hash_file)], check=True)
+    result = subprocess.run(["git", "diff", "--cached", "--quiet"])
+    if result.returncode != 0:
+        subprocess.run(["git", "commit", "-m", "chore: auto-update stock index data"], check=True)
+        subprocess.run(["git", "push"], check=True)
+        print("🚀 Git push completed.")
+    else:
+        print("⚠️ No changes detected in git after hash check.")
 else:
     print("✅ No changes detected — skipping write.")
+

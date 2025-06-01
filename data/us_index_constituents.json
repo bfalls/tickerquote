@@ -6333,5 +6333,15 @@
         "S&P 500"
       ]
     }
+    {
+    "Symbol": "ZZZZ",
+    "Security": "Test Co",
+    "GICS Sector": "Testing",
+    "GICS Sub-Industry": "Mocking",
+    "Headquarters Location": "Fake City",
+    "Date added": None,
+    "Founded": None,
+    "indexes": ["S&P 500"]
+    }
   ]
 }

@@ -34,7 +34,7 @@ jobs:
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_FRONTEND_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_FRONTEND_SECRET_ACCESS_KEY }}
-          AWS_REGION: us-west-2  # adjust if needed
+          AWS_REGION: us-east-2  # adjust if needed
         run: |
-          aws s3 sync dist/ s3://your-s3-bucket-name/ --delete \
+          aws s3 sync dist/ s3://tickerquote-frontend/ --delete \
             --cache-control "public, max-age=31536000, immutable"

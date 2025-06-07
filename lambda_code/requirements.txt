@@ -1,0 +1,4 @@
+twelvedata[pandas]
+boto3
+python-dotenv
+requests

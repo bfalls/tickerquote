@@ -37,7 +37,7 @@ jobs:
         python-version: '3.11'
 
     - name: Install test dependencies
-      run: python3 -m pip install -r lambda_code/requirements-dev.txt
+      run: python3 -m pip install -r lambda_code/requirements/requirements_evaluate_stock-dev.txt
 
     - name: Run unit tests
       run: |

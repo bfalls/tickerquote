@@ -11,6 +11,9 @@ zip_lambda() {
   rm -rf ${BUILD_DIR}
   mkdir -p ${BUILD_DIR}
   python3 -m pip install -r "$REQS_FILE" -t ${BUILD_DIR}/ >/dev/null
+  # Clean up extra files to reduce ZIP size
+  find ${BUILD_DIR} -type d -name "*.dist-info" -exec rm -rf {} +
+  find ${BUILD_DIR} -type d -name "__pycache__" -exec rm -rf {} +
   rsync -av --exclude='__pycache__' $SRC_DIR/ ${BUILD_DIR}/
   cd ${BUILD_DIR} && zip -r ../$ZIP_NAME . >/dev/null
   cd ..
@@ -25,6 +28,7 @@ deploy_lambda() {
     local RUNTIME=$4
     local ROLE_ARN=$5
     local HANDLER=$6
+    export AWS_PAGER=""
 
     echo "🚀 Deploying Lambda function..."
     echo "🔍 Checking if function '$LAMBDA_NAME' exists in region '$AWS_REGION'..."

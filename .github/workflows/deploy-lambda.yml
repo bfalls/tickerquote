@@ -18,6 +18,8 @@ jobs:
       ALPHA_VANTAGE_KEY: ${{ secrets.ALPHA_VANTAGE_KEY }}
       AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
       AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      FINNHUB_API_KEY: ${{secrets.FINNHUB_API_KEY}}
+      TWELVE_DATA_API_KEY: ${{secrets.TWELVE_DATA_API_KEY}}
       AWS_REGION: us-east-1
 
     steps:

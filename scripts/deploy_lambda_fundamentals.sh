@@ -1,5 +1,13 @@
 #!/bin/bash
 set -e
+
+# Require ZIP_FILE to be set
+if [[ -z "$ZIP_FILE" ]]; then
+  echo "❌ Error: ZIP_FILE environment variable is not set."
+  echo "Please run the script with: ZIP_FILE=yourfile.zip bash scripts/deploy_lambda_fundamentals.sh"
+  exit 1
+fi
+
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 source "$SCRIPT_DIR/lambda_utils.sh"
 

@@ -21,8 +21,13 @@ jobs:
       FINNHUB_API_KEY: ${{secrets.FINNHUB_API_KEY}}
       TWELVE_DATA_API_KEY: ${{secrets.TWELVE_DATA_API_KEY}}
       AWS_REGION: us-east-1
+      ZIP_FILE: evaluate_lambda.zip
 
     steps:
+    - name: Set artifact base name
+      id: extract_name
+      run: echo "ARTIFACT_NAME=${ZIP_FILE%.zip}" >> $GITHUB_ENV
+
     - name: Checkout code
       uses: actions/checkout@v3
 
@@ -48,7 +53,7 @@ jobs:
         fi
 
     - name: Deploy via custom script
-      run: ./scripts/deploy_lambda.sh
+      run: ./scripts/deploy_lambda_eval.sh
       env:
         AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
         AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -57,5 +62,5 @@ jobs:
     - name: Upload Lambda ZIP artifact
       uses: actions/upload-artifact@v4
       with:
-        name: lambda_payload
-        path: lambda_payload.zip
+        name: ${{ env.ARTIFACT_NAME }}
+        path: ${{ env.ZIP_FILE }}

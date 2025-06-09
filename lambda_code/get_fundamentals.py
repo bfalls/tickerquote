@@ -3,6 +3,7 @@ import json
 import time
 import requests
 import boto3
+import botocore.exceptions
 from datetime import datetime
 
 try:
@@ -38,23 +39,44 @@ def fetch_fundamentals(symbol: str):
     data["updated"] = datetime.utcnow().isoformat()
     return data
 
-def save_to_s3(symbol_data):
-    symbol = symbol_data["symbol"]
-    key = f"fundamentals/{symbol}.json"
-    s3.put_object(
-        Bucket=S3_BUCKET,
-        Key=key,
-        Body=json.dumps(symbol_data),
-        ContentType="application/json"
-    )
-    print(f"Uploaded {symbol} fundamentals to s3://{S3_BUCKET}/{key}")
-
 def handler(event=None, context=None):
-    for symbol in DJIA_TICKERS:
-        data = fetch_fundamentals(symbol)
-        if data:
-            save_to_s3(data)
+    US_INDEX_CONSTITUENTS_FILE='us_index_constituents.json'
+    try:
+        boto3data = s3.get_object(Bucket=S3_BUCKET, Key=US_INDEX_CONSTITUENTS_FILE)
+        constituents = json.load(boto3data['Body'])
+        companies = constituents['companies']
+        djia_symbols = [c['Symbol'] for c in companies if 'Dow Jones' in c.get('indexes', [])]
+
+    except botocore.exceptions.ClientError as e:
+        print(f"S3 access error: {e.response['Error']['Message']}")
+        djia_symbols = []
+
+    except json.JSONDecodeError:
+        print("Failed to decode JSON from S3 object body.")
+        djia_symbols = []
+
+    except Exception as e:
+        print(f"Unexpected error: {e}")
+        djia_symbols = []
+
+    fundamentals = {}
+    for symbol in djia_symbols:
+        print(f"Fetching {symbol}")
+        fundamentals[symbol] = fetch_fundamentals(symbol)
         time.sleep(1.2)  # Stay under Finnhub's 60/min free tier limit
+
+    try:
+        s3.put_object(
+            Bucket=S3_BUCKET,
+            Key='djia_fundamentals.json',
+            Body=json.dumps(fundamentals),
+            ContentType='application/json')
+        print(f"Uploaded djia_fundamentals.json with {len(fundamentals)} entries")
+        return {"statusCode": 200, "body": f"{len(fundamentals)} symbols uploaded"}
+
+    except Exception as e:
+        print(f"Error uploading to S3: {e}")
+        return {"statusCode": 500, "body": "Upload failed"}
 
 if __name__ == "__main__":
     handler()

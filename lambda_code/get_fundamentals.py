@@ -20,13 +20,6 @@ AWS_REGION = os.environ.get("AWS_REGION", "us-east-1")
 # S3 client
 s3 = boto3.client("s3", region_name=AWS_REGION)
 
-# DJIA ticker list
-DJIA_TICKERS = [
-    "AAPL", "AMGN", "AXP", "BA", "CAT", "CRM", "CSCO", "CVX", "DIS", "DOW",
-    "GS", "HD", "HON", "IBM", "INTC", "JNJ", "JPM", "KO", "MCD", "MMM",
-    "MRK", "MSFT", "NKE", "PG", "TRV", "UNH", "V", "VZ", "WBA", "WMT"
-]
-
 def fetch_fundamentals(symbol: str):
     url = "https://finnhub.io/api/v1/stock/metric"
     params = {"symbol": symbol, "metric": "all", "token": FINNHUB_API_KEY}
@@ -45,6 +38,7 @@ def handler(event=None, context=None):
         boto3data = s3.get_object(Bucket=S3_BUCKET, Key=US_INDEX_CONSTITUENTS_FILE)
         constituents = json.load(boto3data['Body'])
         companies = constituents['companies']
+        # filtering to DJIA for now.
         djia_symbols = [c['Symbol'] for c in companies if 'Dow Jones' in c.get('indexes', [])]
 
     except botocore.exceptions.ClientError as e:

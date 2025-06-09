@@ -1,5 +1,5 @@
 {
-  "version": "2025-06-01",
+  "version": "2025-06-09",
   "companies": [
     {
       "Symbol": "A",
@@ -6332,16 +6332,6 @@
       "indexes": [
         "S&P 500"
       ]
-    }
-    {
-    "Symbol": "ZZZZ",
-    "Security": "Test Co",
-    "GICS Sector": "Testing",
-    "GICS Sub-Industry": "Mocking",
-    "Headquarters Location": "Fake City",
-    "Date added": null,
-    "Founded": null,
-    "indexes": ["S&P 500"]
     }
   ]
 }

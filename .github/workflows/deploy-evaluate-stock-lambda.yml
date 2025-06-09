@@ -62,5 +62,5 @@ jobs:
     - name: Upload Lambda ZIP artifact
       uses: actions/upload-artifact@v4
       with:
-        name: ${{ env.ARTIFACT_NAME }}
+        name: ${{ env.ARTIFACT_NAME }} # derived from Set artifact base name
         path: ${{ env.ZIP_FILE }}

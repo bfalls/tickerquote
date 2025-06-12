@@ -9,8 +9,6 @@ import type { Fundamentals, StrategyName } from "./types";
 import { FilterControls } from "./components/FilterControls";
 import "./App.css";
 
-// type StrategyName = keyof typeof strategies;
-
 // const mockFundamentals: Fundamentals[] = [
 //   { symbol: "AAPL", peRatio: 28, pbRatio: 6, debtToEquity: 1.5 },
 //   { symbol: "WMT", peRatio: 14, pbRatio: 3, debtToEquity: 0.9 },
@@ -55,8 +53,6 @@ function App() {
     };
   }, []);
 
-  const evaluator = strategies[selectedStrategy];
-
   return (
     <div className="p-6">
       <h1 className="text-2xl font-bold mb-4">Stock Strategy Evaluator</h1>
@@ -78,7 +74,6 @@ function App() {
       <StockTable
         stocks={fundamentals}
         filters={{ peRatio, pbRatio, debtToEquity }}
-        evaluate={evaluator}
       />
     </div>
   );

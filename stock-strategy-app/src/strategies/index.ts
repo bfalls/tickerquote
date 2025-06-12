@@ -15,7 +15,8 @@
 
 import { evaluateStrategyA } from "./strategyA";
 import { evaluateStrategyB } from "./strategyB";
-import type { StrategyFn } from "../types";
+import type { Fundamentals, StrategyResult, StrategyFn } from "../types";
+// import { strategies } from ".";
 
 // Define valid strategy names
 export const STRATEGY_NAMES = ["Value Strategy", "Balance Sheet Strategy"] as const;
@@ -27,3 +28,15 @@ export const strategies: Record<StrategyName, StrategyFn> = {
   "Value Strategy": evaluateStrategyA,
   "Balance Sheet Strategy": evaluateStrategyB,
 };
+
+export function evaluateAllStrategies(
+  fundamentals: Fundamentals
+): Record<string, StrategyResult> {
+  const results: Record<string, StrategyResult> = {};
+
+  for (const [name, evaluator] of Object.entries(strategies)) {
+    results[name] = evaluator(fundamentals);
+  }
+
+  return results;
+}

@@ -3,6 +3,9 @@
   margin: 0 auto;
   padding: 2rem;
   text-align: center;
+  background-color: #F4F5F7; /* Light Gray background */
+  color: #2C2C2C; /* Graphite text */
+  font-family: 'Inter', sans-serif;
 }
 
 .logo {
@@ -12,10 +15,10 @@
   transition: filter 300ms;
 }
 .logo:hover {
-  filter: drop-shadow(0 0 2em #646cffaa);
+  filter: drop-shadow(0 0 2em #2EC4B6); /* Electric Teal hover */
 }
 .logo.react:hover {
-  filter: drop-shadow(0 0 2em #61dafbaa);
+  filter: drop-shadow(0 0 2em #2EC4B6); /* Unify with brand accent */
 }
 
 @keyframes logo-spin {
@@ -35,8 +38,67 @@
 
 .card {
   padding: 2em;
+  background-color: #ffffff;
+  border: 1px solid #E0E0E0;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  color: #2C2C2C;
 }
 
 .read-the-docs {
-  color: #888;
+  color: #6B7280; /* Slate Gray for muted/instructional text */
+}
+
+/* Additional brand-based styling */
+button {
+  background-color: #1E2A38; /* Navy Blue */
+  color: white;
+  border: none;
+  padding: 0.6em 1.2em;
+  margin: 0.5em;
+  border-radius: 4px;
+  cursor: pointer;
+  font-family: 'Inter', sans-serif;
+  font-weight: 500;
+}
+button:hover {
+  background-color: #2EC4B6; /* Electric Teal hover */
+}
+
+input[type="number"] {
+  padding: 0.4em;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-family: 'Inter', sans-serif;
+}
+
+label {
+  display: block;
+  margin-top: 1em;
+  font-size: 0.9em;
+  color: #6B7280; /* Slate Gray for labels */
+}
+
+/* Table colors */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  background-color: white;
+  color: #2C2C2C;
+}
+
+th {
+  background-color: #1E2A38;
+  color: white;
+  padding: 0.75em;
+  text-align: left;
+}
+
+td {
+  padding: 0.75em;
+  border-top: 1px solid #E0E0E0;
+}
+
+tr:nth-child(even) {
+  background-color: #F4F5F7;
 }

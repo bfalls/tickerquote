@@ -1,38 +1,21 @@
-// import { useState, useEffect } from "react";
-// import { StrategyCarousel } from "./components/StrategyCarousel";
-// import { StockTable } from "./components/StockTable";
-// import { strategies } from "./strategies";
-
 // console.log("Rendering App");
 
-// function App() {
-//   return (
-//     <div>
-//       <h1>Testing Strategies</h1>
-//       <ul>
-//         {Object.keys(strategies).map((s) => (
-//           <li key={s}>{s}</li>
-//         ))}
-//       </ul>
-//     </div>
-//   );
-// }
-// export default App;
-
-// import React, { useState } from "react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { typedKeys } from "./utils/typedKeys";
 import { StrategyCarousel } from "./components/StrategyCarousel";
 import { StockTable } from "./components/StockTable";
 import { strategies } from "./strategies";
 import type { Fundamentals, StrategyName } from "./types";
+import { FilterControls } from "./components/FilterControls";
+import "./App.css";
+
 // type StrategyName = keyof typeof strategies;
 
-const mockFundamentals: Fundamentals[] = [
-  { symbol: "AAPL", peRatio: 28, pbRatio: 6, debtToEquity: 1.5 },
-  { symbol: "WMT", peRatio: 14, pbRatio: 3, debtToEquity: 0.9 },
-  { symbol: "JPM", peRatio: 10, pbRatio: 1, debtToEquity: 0.6 },
-];
+// const mockFundamentals: Fundamentals[] = [
+//   { symbol: "AAPL", peRatio: 28, pbRatio: 6, debtToEquity: 1.5 },
+//   { symbol: "WMT", peRatio: 14, pbRatio: 3, debtToEquity: 0.9 },
+//   { symbol: "JPM", peRatio: 10, pbRatio: 1, debtToEquity: 0.6 },
+// ];
 
 function App() {
   // believe it or not, all helpers to get around Typescript type safety issues...
@@ -40,6 +23,37 @@ function App() {
   const [selectedStrategy, setSelectedStrategy] = useState<StrategyName>(
     strategyKeys[0]
   );
+  const [fundamentals, setFundamentals] = useState<Fundamentals[]>([]);
+
+  // Filter state
+  const [peRatio, setPeRatio] = useState<number | undefined>(undefined);
+  const [pbRatio, setPbRatio] = useState<number | undefined>(undefined);
+  const [debtToEquity, setDebtToEquity] = useState<number | undefined>(
+    undefined
+  );
+
+  useEffect(() => {
+    const controller = new AbortController();
+    fetch(
+      "https://tickerquote-fundamentals-bucket.s3.amazonaws.com/djia_fundamentals.json",
+      {
+        signal: controller.signal,
+      }
+    )
+      .then((res) => res.json())
+      .then((data) => {
+        const values = Object.values(data) as Fundamentals[];
+        setFundamentals(values);
+      })
+      .catch((err) => {
+        if (err.name !== "AbortError") {
+          console.error("Failed to fetch fundamentals", err);
+        }
+      });
+    return () => {
+      controller.abort();
+    };
+  }, []);
 
   const evaluator = strategies[selectedStrategy];
 
@@ -51,7 +65,21 @@ function App() {
         selected={selectedStrategy}
         onSelect={setSelectedStrategy}
       />
-      <StockTable stocks={mockFundamentals} evaluate={evaluator} />
+
+      <FilterControls
+        peRatio={peRatio}
+        pbRatio={pbRatio}
+        debtToEquity={debtToEquity}
+        setPeRatio={setPeRatio}
+        setPbRatio={setPbRatio}
+        setDebtToEquity={setDebtToEquity}
+      />
+
+      <StockTable
+        stocks={fundamentals}
+        filters={{ peRatio, pbRatio, debtToEquity }}
+        evaluate={evaluator}
+      />
     </div>
   );
 }

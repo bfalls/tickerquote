@@ -22,6 +22,13 @@ function App() {
     strategyKeys[0]
   );
   const [fundamentals, setFundamentals] = useState<Fundamentals[]>([]);
+  const [fundamentalsLastModified, setFundamentalsLastModified] = useState<
+    string | null
+  >(null);
+  // const [fundamentalsEtag, setFundamentalsEtag] = useState<string | null>(null);
+  const [fundamentalsLastChecked, setFundamentalsLastChecked] = useState<
+    string | null
+  >(null);
 
   // Filter state
   const [peRatio, setPeRatio] = useState<number | undefined>(undefined);
@@ -30,28 +37,58 @@ function App() {
     undefined
   );
 
-  useEffect(() => {
-    const controller = new AbortController();
+  const fetchFundamentals = async (signal?: AbortSignal) => {
     fetch(
       "https://tickerquote-fundamentals-bucket.s3.amazonaws.com/djia_fundamentals.json",
       {
-        signal: controller.signal,
+        signal,
       }
     )
-      .then((res) => res.json())
-      .then((data) => {
+      .then(async (res) => {
+        // const etag = res.headers.get("ETag");
+        const lastModified = res.headers.get("Last-Modified");
+        const data = await res.json();
         const values = Object.values(data) as Fundamentals[];
         setFundamentals(values);
+        setFundamentalsLastModified(lastModified);
       })
       .catch((err) => {
         if (err.name !== "AbortError") {
           console.error("Failed to fetch fundamentals", err);
         }
       });
+  };
+
+  useEffect(() => {
+    const controller = new AbortController();
+    fetchFundamentals(controller.signal);
     return () => {
       controller.abort();
     };
   }, []);
+
+  const checkForFundamentalsUpdate = async () => {
+    const res = await fetch(
+      "https://tickerquote-fundamentals-bucket.s3.amazonaws.com/djia_fundamentals.json",
+      {
+        method: "HEAD",
+        headers: {
+          "If-Modified-Since": fundamentalsLastModified ?? "",
+        },
+      }
+    );
+
+    if (res.status === 304) {
+      alert("You're already viewing the latest data.");
+    } else if (res.status === 200) {
+      alert("New data is available! Refreshing...");
+      await fetchFundamentals();
+    } else {
+      console.error("Unexpected response:", res.status);
+    }
+
+    setFundamentalsLastChecked(new Date().toLocaleString());
+  };
 
   return (
     <div className="p-6">
@@ -61,6 +98,25 @@ function App() {
         selected={selectedStrategy}
         onSelect={setSelectedStrategy}
       />
+
+      {fundamentalsLastModified && (
+        <p style={{ fontSize: "0.85em", color: "#6B7280" }}>
+          Data last updated:{" "}
+          {new Date(fundamentalsLastModified).toLocaleString()}
+          <span
+            style={{ cursor: "pointer", marginLeft: "8px" }}
+            onClick={checkForFundamentalsUpdate}
+            title="Check for updates">
+            🔄
+          </span>
+        </p>
+      )}
+
+      {fundamentalsLastChecked && (
+        <p style={{ fontSize: "0.75em", color: "#6B7280", marginTop: "4px" }}>
+          Last checked: {new Date(fundamentalsLastChecked).toLocaleString()}
+        </p>
+      )}
 
       <FilterControls
         peRatio={peRatio}

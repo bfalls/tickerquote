@@ -102,3 +102,29 @@ td {
 tr:nth-child(even) {
   background-color: #F4F5F7;
 }
+
+#mainContainer {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+  height: 100%; /* or set a fixed height if needed */
+}
+
+#listTable {
+  flex: 0 1 auto; /* Shrink/grow as needed but only to content size */
+  border-right: 1px solid #ccc;
+  padding: 1rem;
+  background-color: #fff;
+  max-height: 100vh;
+  height: 100%
+}
+
+#detailContainer {
+  flex: 1 1 0%;
+  padding: 1rem;
+  overflow-y: auto;
+  background-color: #f9f9f9;
+  display: block;
+  max-height: 100%;
+}
+

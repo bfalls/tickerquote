@@ -1,37 +1,44 @@
 .table-container {
   max-height: 500px;
-  overflow-y: auto;
-  border: 1px solid #1E2A38; /* Navy Blue for brand identity */
+  overflow-y: scroll;
+  overflow-x: hidden;
+  border: 1px solid #1e2a38; /* Navy Blue for brand identity */
   border-radius: 4px;
-  background-color: #F4F5F7; /* Light Gray background */
+  background-color: #f4f5f7; /* Light Gray background */
+  cursor: default;
 }
 
 .stock-table {
   width: 100%;
   border-collapse: collapse;
-  color: #2C2C2C; /* Graphite text */
-  font-family: 'Inter', sans-serif;
+  color: #2c2c2c; /* Graphite text */
+  font-family: "Inter", sans-serif;
 }
 
 .stock-table thead th {
   position: sticky;
   top: 0;
-  background: #1E2A38; /* Navy Blue headers */
-  color: #F4F5F7; /* Light Gray text for contrast */
-  border-bottom: 2px solid #2EC4B6; /* Electric Teal bottom border */
+  background: #1e2a38; /* Navy Blue headers */
+  color: #f4f5f7; /* Light Gray text for contrast */
+  border-bottom: 2px solid #2ec4b6; /* Electric Teal bottom border */
 }
 
 .stock-table th,
 .stock-table td {
   padding: 8px 12px;
-  border: 1px solid #D1D5DB; /* Soft border that blends with Light Gray */
+  border: 1px solid #d1d5db; /* Soft border that blends with Light Gray */
   text-align: left;
 }
 
 .stock-table tbody tr:nth-child(even) {
-  background-color: #E5E7EB; /* Very light alternate row shading */
+  background-color: #e5e7eb; /* Very light alternate row shading */
 }
 
 .stock-table tbody tr:hover {
-  background-color: #DFF5F3; /* Pale teal on hover */
+  background-color: #dff5f3; /* Pale teal on hover */
+}
+
+/* Highlight selected row */
+.table-container table tr.selected-row {
+  background-color: #e0b13f22; /* Light soft gold with transparency */
 }

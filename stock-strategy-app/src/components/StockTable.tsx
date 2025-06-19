@@ -1,6 +1,6 @@
 import React from "react";
 import type { Fundamentals } from "../types";
-import { evaluateAllStrategies } from "../strategies";
+// import { evaluateAllStrategies } from "../strategies";
 import "./StockTable.css";
 
 interface Props {
@@ -10,6 +10,8 @@ interface Props {
     pbRatio?: number;
     debtToEquity?: number;
   };
+  selectedSymbol?: string | null;
+  onSelect: (symbol: string) => void;
 }
 
 const passesFilters = (stock: Fundamentals, filters: Props["filters"] = {}) => {
@@ -23,9 +25,15 @@ const passesFilters = (stock: Fundamentals, filters: Props["filters"] = {}) => {
   );
 };
 
-export const StockTable: React.FC<Props> = ({ stocks, filters }) => {
-  const filtered = stocks.filter((stock) => passesFilters(stock, filters));
-
+export const StockTable: React.FC<Props> = ({
+  stocks,
+  filters,
+  selectedSymbol,
+  onSelect,
+}) => {
+  const filteredStocks = stocks.filter((stock) =>
+    passesFilters(stock, filters)
+  );
   return (
     <div className="table-container">
       <table className="stock-table">
@@ -35,28 +43,20 @@ export const StockTable: React.FC<Props> = ({ stocks, filters }) => {
             <th>P/E Ratio</th>
             <th>P/B Ratio</th>
             <th>Debt/Equity</th>
-            <th>Value</th>
-            <th>Balance Sheet</th>
           </tr>
         </thead>
         <tbody>
-          {filtered.map((stock) => {
-            const results = evaluateAllStrategies(stock);
-            const metric = stock.metric;
+          {filteredStocks.map((stock) => {
+            const isSelected = selectedSymbol === stock.symbol;
             return (
-              <tr key={stock.symbol}>
+              <tr
+                key={stock.symbol}
+                onClick={() => onSelect(stock.symbol)}
+                className={isSelected ? "selected-row" : ""}>
                 <td>{stock.symbol}</td>
-                <td>{metric.peTTM ?? "-"}</td>
-                <td>{metric.pb ?? "-"}</td>
-                <td className="border px-4 py-2">
-                  {metric["totalDebt/totalEquityAnnual"]}
-                </td>
-                <td className="border px-4 py-2">
-                  {results["Value Strategy"]}
-                </td>
-                <td className="border px-4 py-2">
-                  {results["Balance Sheet Strategy"]}
-                </td>
+                <td>{stock.metric.peTTM ?? "-"}</td>
+                <td>{stock.metric.pb ?? "-"}</td>
+                <td>{stock.metric["totalDebt/totalEquityAnnual"] ?? "-"}</td>
               </tr>
             );
           })}

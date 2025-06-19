@@ -7,13 +7,8 @@ import { StockTable } from "./components/StockTable";
 import { strategies } from "./strategies";
 import type { Fundamentals, StrategyName } from "./types";
 import { FilterControls } from "./components/FilterControls";
+import { StrategyDetail } from "./components/StrategyDetail";
 import "./App.css";
-
-// const mockFundamentals: Fundamentals[] = [
-//   { symbol: "AAPL", peRatio: 28, pbRatio: 6, debtToEquity: 1.5 },
-//   { symbol: "WMT", peRatio: 14, pbRatio: 3, debtToEquity: 0.9 },
-//   { symbol: "JPM", peRatio: 10, pbRatio: 1, debtToEquity: 0.6 },
-// ];
 
 function App() {
   // believe it or not, all helpers to get around Typescript type safety issues...
@@ -29,6 +24,7 @@ function App() {
   const [fundamentalsLastChecked, setFundamentalsLastChecked] = useState<
     string | null
   >(null);
+  const [selectedSymbol, setSelectedSymbol] = useState<string | null>(null);
 
   // Filter state
   const [peRatio, setPeRatio] = useState<number | undefined>(undefined);
@@ -93,44 +89,61 @@ function App() {
   return (
     <div className="p-6">
       <h1 className="text-2xl font-bold mb-4">Stock Strategy Evaluator</h1>
-      <StrategyCarousel
-        strategies={Object.keys(strategies) as StrategyName[]}
-        selected={selectedStrategy}
-        onSelect={setSelectedStrategy}
-      />
+      <div id="appContainer">
+        <div id="appScreener">
+          <StrategyCarousel
+            strategies={Object.keys(strategies) as StrategyName[]}
+            selected={selectedStrategy}
+            onSelect={setSelectedStrategy}
+          />
 
-      {fundamentalsLastModified && (
-        <p style={{ fontSize: "0.85em", color: "#6B7280" }}>
-          Data last updated:{" "}
-          {new Date(fundamentalsLastModified).toLocaleString()}
-          <span
-            style={{ cursor: "pointer", marginLeft: "8px" }}
-            onClick={checkForFundamentalsUpdate}
-            title="Check for updates">
-            🔄
-          </span>
-        </p>
-      )}
+          {fundamentalsLastModified && (
+            <p style={{ fontSize: "0.85em", color: "#6B7280" }}>
+              Data last updated:{" "}
+              {new Date(fundamentalsLastModified).toLocaleString()}
+              <span
+                style={{ cursor: "pointer", marginLeft: "8px" }}
+                onClick={checkForFundamentalsUpdate}
+                title="Check for updates">
+                🔄
+              </span>
+            </p>
+          )}
 
-      {fundamentalsLastChecked && (
-        <p style={{ fontSize: "0.75em", color: "#6B7280", marginTop: "4px" }}>
-          Last checked: {new Date(fundamentalsLastChecked).toLocaleString()}
-        </p>
-      )}
+          {fundamentalsLastChecked && (
+            <p
+              style={{
+                fontSize: "0.75em",
+                color: "#6B7280",
+                marginTop: "4px",
+              }}>
+              Last checked: {new Date(fundamentalsLastChecked).toLocaleString()}
+            </p>
+          )}
+          <FilterControls
+            peRatio={peRatio}
+            pbRatio={pbRatio}
+            debtToEquity={debtToEquity}
+            setPeRatio={setPeRatio}
+            setPbRatio={setPbRatio}
+            setDebtToEquity={setDebtToEquity}
+          />
+        </div>
 
-      <FilterControls
-        peRatio={peRatio}
-        pbRatio={pbRatio}
-        debtToEquity={debtToEquity}
-        setPeRatio={setPeRatio}
-        setPbRatio={setPbRatio}
-        setDebtToEquity={setDebtToEquity}
-      />
-
-      <StockTable
-        stocks={fundamentals}
-        filters={{ peRatio, pbRatio, debtToEquity }}
-      />
+        <div id="mainContainer">
+          <div id="listTable">
+            <StockTable
+              stocks={fundamentals}
+              filters={{ peRatio, pbRatio, debtToEquity }}
+              selectedSymbol={selectedSymbol}
+              onSelect={setSelectedSymbol}
+            />
+          </div>
+          <div id="detailContainer">
+            <StrategyDetail symbol={selectedSymbol} />
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

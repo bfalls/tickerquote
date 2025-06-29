@@ -1,0 +1,66 @@
+name: Deploy TwelveDataProxy Lambda
+
+on:
+  push:
+    paths:
+      - 'lambda_code/**'
+      - 'tests/**'
+      - 'requirements-dev.txt'
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    env:
+      ALPHA_VANTAGE_KEY: ${{ secrets.ALPHA_VANTAGE_KEY }}
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      FINNHUB_API_KEY: ${{secrets.FINNHUB_API_KEY}}
+      TWELVE_DATA_API_KEY: ${{secrets.TWELVE_DATA_API_KEY}}
+      AWS_REGION: us-east-1
+      ZIP_FILE: stream_price_data.zip
+
+    steps:
+    - name: Set artifact base name
+      id: extract_name
+      run: echo "ARTIFACT_NAME=${ZIP_FILE%.zip}" >> $GITHUB_ENV
+
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+
+    - name: Install test dependencies
+      run: python3 -m pip install -r lambda_code/requirements/requirements_stream_price_data-dev.txt
+
+    - name: Run unit tests
+      run: |
+        export PYTHONPATH=$PYTHONPATH:$(pwd)/lambda_code
+        python3 -m pytest lambda_code/tests
+
+    - name: Check environment variables
+      run: |
+        echo "Region: $AWS_REGION"
+        if [ -z "$AWS_REGION" ]; then
+          echo "❌ AWS_REGION is not set"
+          exit 1
+        fi
+
+    - name: Deploy via custom script
+      run: ./scripts/deploy_lambda_stream_price_data.sh
+      env:
+        AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+        AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        AWS_REGION: ${{ env.AWS_REGION }}
+
+    - name: Upload Lambda ZIP artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ env.ARTIFACT_NAME }} # derived from Set artifact base name
+        path: ${{ env.ZIP_FILE }}

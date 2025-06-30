@@ -2,26 +2,22 @@ name: Deploy Stream Price Data App to EC2
 
 on:
   push:
+    paths:
+      - 'ec2/stream_price_data/**'
     branches: [main]
 
 jobs:
   deploy:
     runs-on: ubuntu-latest
-
     env:
       AWS_REGION: us-east-1
+      BUCKET_NAME: tickerquote-deployments
+      ZIP_NAME: stream_price_data_app.zip
+      EC2_INSTANCE_ID: ${{ secrets.STREAM_PRICE_DATA_EC2_ID }}
 
     steps:
-      - name: Checkout code
+      - name: Checkout Code
         uses: actions/checkout@v3
-
-      - name: Check environment variables
-        run: |
-            echo "Region: $AWS_REGION"
-            if [ -z "$AWS_REGION" ]; then
-            echo "❌ AWS_REGION is not set"
-            exit 1
-            fi
 
       - name: Set up AWS CLI
         uses: aws-actions/configure-aws-credentials@v2
@@ -30,23 +26,29 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
 
-      - name: Get EC2 Public IP
-        id: get-ip
+      - name: Zip EC2 App
         run: |
-          IP=$(aws ec2 describe-instances \
-            --instance-ids ${{ secrets.STREAM_PRICE_DATA_EC2_ID }} \
-            --query "Reservations[0].Instances[0].PublicIpAddress" \
-            --output text)
-          echo "EC2_IP=$IP" >> $GITHUB_ENV
+          cd ec2/stream_price_data
+          zip -r ../../$ZIP_NAME ./*
+          cd ../..
 
-      - name: Deploy code to EC2
+      - name: Upload to S3
         run: |
-            echo "$SSH_PRIVATE_KEY" > key.pem
-            chmod 600 key.pem
-            # Ensure target directory exists
-            ssh -i key.pem -o StrictHostKeyChecking=no ec2-user@$EC2_IP "mkdir -p /home/ec2-user/app"
-            rsync -avz -e "ssh -i key.pem -o StrictHostKeyChecking=no" ec2/stream_price_data/ ec2-user@$EC2_IP:/home/ec2-user/app/
-            ssh -i key.pem -o StrictHostKeyChecking=no ec2-user@$EC2_IP "sudo systemctl restart streamer.service"
-        env:
-            SSH_PRIVATE_KEY: ${{ secrets.STREAM_PRICE_DATA_EC2_SSH_PRIVATE_KEY }}
-            EC2_IP: ${{ env.EC2_IP }}
+          aws s3 cp $ZIP_NAME s3://$BUCKET_NAME/$ZIP_NAME
+
+      - name: Deploy to EC2 via SSM
+        run: |
+          aws ssm send-command \
+            --document-name "AWS-RunShellScript" \
+            --instance-ids "$EC2_INSTANCE_ID" \
+            --comment "Deploy updated Stream Price Data app" \
+            --parameters 'commands=[
+              "echo Stopping service...",
+              "sudo systemctl stop streamer.service",
+              "cd /home/ec2-user",
+              "aws s3 cp s3://'"$BUCKET_NAME"'/'"$ZIP_NAME"' stream_price_data_app.zip",
+              "rm -rf app && mkdir app && unzip stream_price_data_app.zip -d app",
+              "echo Starting service...",
+              "sudo systemctl start streamer.service"
+            ]' \
+            --output text

@@ -10,7 +10,7 @@ import boto3
 AWS_REGION = os.environ.get("AWS_REGION", "us-east-1")
 ssm = boto3.client('ssm', region_name=AWS_REGION)
 
-TWELVE_DATA_API_KEY = os.environ.get("TWELVE_DATA_API_KEY")
+TWELVE_DATA_API_KEY = None
 TWELVE_DATA_WS_URL = "wss://ws.twelvedata.com/v1/price"
 PORT = int(os.environ.get("PORT", "8080"))
 
@@ -63,7 +63,7 @@ async def main():
 
 if __name__ == "__main__":
     try:
-        api_key = ssm.get_parameter(Name="TWELVE_DATA_API_KEY", WithDecryption=True)["Parameter"]["Value"]
+        TWELVE_DATA_API_KEY = ssm.get_parameter(Name="TWELVE_DATA_API_KEY", WithDecryption=True)["Parameter"]["Value"]
     except Exception as e:
         logging.error("The Twelve Data API key is required")
         sys.exit(1)

@@ -2,8 +2,13 @@ import asyncio
 import json
 import logging
 import os
+import sys
 from websockets import serve, connect
 from websockets.exceptions import ConnectionClosedOK, ConnectionClosedError
+import boto3
+
+ssm = boto3.client('ssm')
+
 
 TWELVE_DATA_API_KEY = os.environ.get("TWELVE_DATA_API_KEY")
 TWELVE_DATA_WS_URL = "wss://ws.twelvedata.com/v1/price"
@@ -57,6 +62,14 @@ async def main():
         await asyncio.Future()  # run forever
 
 if __name__ == "__main__":
+    try:
+        api_key = ssm.get_parameter(Name="TWELVE_DATA_API_KEY", WithDecryption=True)["Parameter"]["Value"]
+    except Exception as e:
+        logging.error("The Twelve Data API key is required")
+        sys.exit(1)
+
     if not TWELVE_DATA_API_KEY:
-        raise RuntimeError("Environment variable TWELVE_DATA_API_KEY is required")
+        logging.error("Error: TWELVE_DATA_API_KEY is empty")
+        sys.exit(1)
+        
     asyncio.run(main())

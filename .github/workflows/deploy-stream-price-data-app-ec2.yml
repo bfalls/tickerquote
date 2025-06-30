@@ -5,6 +5,7 @@ on:
     paths:
       - 'ec2/stream_price_data/**'
     branches: [main]
+  workflow_dispatch:
 
 jobs:
   deploy:

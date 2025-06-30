@@ -7,8 +7,8 @@ from websockets import serve, connect
 from websockets.exceptions import ConnectionClosedOK, ConnectionClosedError
 import boto3
 
-ssm = boto3.client('ssm')
-
+AWS_REGION = os.environ.get("AWS_REGION", "us-east-1")
+ssm = boto3.client('ssm', region_name=AWS_REGION)
 
 TWELVE_DATA_API_KEY = os.environ.get("TWELVE_DATA_API_KEY")
 TWELVE_DATA_WS_URL = "wss://ws.twelvedata.com/v1/price"
@@ -71,5 +71,5 @@ if __name__ == "__main__":
     if not TWELVE_DATA_API_KEY:
         logging.error("Error: TWELVE_DATA_API_KEY is empty")
         sys.exit(1)
-        
+
     asyncio.run(main())

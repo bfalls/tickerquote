@@ -1,64 +1,62 @@
-# stream_price_data_app.py
-
 import asyncio
-import websockets
 import json
-import boto3
+import logging
 import os
-import signal
-import sys
+from websockets import serve, connect
+from websockets.exceptions import ConnectionClosedOK, ConnectionClosedError
 
-running = True
+TWELVE_DATA_API_KEY = os.environ.get("TWELVE_DATA_API_KEY")
+TWELVE_DATA_WS_URL = "wss://ws.twelvedata.com/v1/price"
+PORT = int(os.environ.get("PORT", "8080"))
 
-def handle_signal(sig, frame):
-    global running
-    print(f"Received signal {sig}, shutting down...")
-    running = False
+logging.basicConfig(level=logging.INFO)
+clients = set()
 
-signal.signal(signal.SIGINT, handle_signal)
-signal.signal(signal.SIGTERM, handle_signal)
-
-def get_api_key():
-    ssm = boto3.client("ssm", region_name="us-east-1")
-    response = ssm.get_parameter(
-        Name='TWELVE_DATA_API_KEY',
-        WithDecryption=True
-    )
-    return response['Parameter']['Value']
-
-async def stream_price(symbol, api_key):
-    url = f"wss://ws.twelvedata.com/v1/quotes/price?apikey={api_key}"
-    async with websockets.connect(url) as ws:
-        await ws.send(json.dumps({
+async def twelve_data_stream(symbol: str, websocket):
+    """Connect to Twelve Data and stream price updates for a symbol to one client."""
+    async with connect(TWELVE_DATA_WS_URL) as td_ws:
+        await td_ws.send(json.dumps({
             "action": "subscribe",
             "params": {
-                "symbols": symbol
+                "symbols": symbol,
+                "apikey": TWELVE_DATA_API_KEY,
             }
         }))
-        print(f"Subscribed to {symbol}")
+        logging.info(f"Subscribed to {symbol} for client")
 
-        while running:
-            try:
-                message = await asyncio.wait_for(ws.recv(), timeout=30)
-                data = json.loads(message)
-                if data.get("event") == "price":
-                    print(f"[{data['symbol']}] ${data['price']}")
-            except asyncio.TimeoutError:
-                print("Still alive...")
-            except Exception as e:
-                print("WebSocket error:", e)
-                break
+        try:
+            while True:
+                msg = await td_ws.recv()
+                await websocket.send(msg)
+        except (ConnectionClosedOK, ConnectionClosedError):
+            logging.info(f"Client disconnected: {symbol}")
+        finally:
+            await td_ws.send(json.dumps({
+                "action": "unsubscribe",
+                "params": {"symbols": symbol}
+            }))
+            logging.info(f"Unsubscribed from {symbol}")
+
+async def handle_client(websocket):
+    try:
+        msg = await websocket.recv()
+        data = json.loads(msg)
+        symbol = data.get("symbol")
+
+        if not symbol:
+            await websocket.send(json.dumps({"error": "Missing symbol"}))
+            return
+
+        await twelve_data_stream(symbol, websocket)
+    except json.JSONDecodeError:
+        await websocket.send(json.dumps({"error": "Invalid JSON"}))
 
 async def main():
-    symbol = os.environ.get("SYMBOL")
-    if not symbol:
-        print("Environment variable SYMBOL is required.")
-        sys.exit(1)
-
-    api_key = get_api_key()
-    while running:
-        await stream_price(symbol, api_key)
-        await asyncio.sleep(5)
+    async with serve(handle_client, "0.0.0.0", PORT):
+        logging.info(f"Streaming server running on port {PORT}")
+        await asyncio.Future()  # run forever
 
 if __name__ == "__main__":
+    if not TWELVE_DATA_API_KEY:
+        raise RuntimeError("Environment variable TWELVE_DATA_API_KEY is required")
     asyncio.run(main())

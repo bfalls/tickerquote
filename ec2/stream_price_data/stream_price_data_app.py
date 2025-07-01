@@ -11,14 +11,14 @@ AWS_REGION = os.environ.get("AWS_REGION", "us-east-1")
 ssm = boto3.client('ssm', region_name=AWS_REGION)
 
 TWELVE_DATA_API_KEY = None
-TWELVE_DATA_WS_URL = "wss://ws.twelvedata.com/v1/price"
+TWELVE_DATA_WS_URL = ''
 PORT = int(os.environ.get("PORT", "8080"))
 
 logging.basicConfig(level=logging.INFO)
 clients = set()
 
 async def twelve_data_stream(symbol: str, websocket):
-    """Connect to Twelve Data and stream price updates for a symbol to one client."""
+    logging.info(f"Connecting to Twelve Data WS at {TWELVE_DATA_WS_URL}")
     async with connect(TWELVE_DATA_WS_URL) as td_ws:
         await td_ws.send(json.dumps({
             "action": "subscribe",
@@ -64,6 +64,7 @@ async def main():
 if __name__ == "__main__":
     try:
         TWELVE_DATA_API_KEY = ssm.get_parameter(Name="TWELVE_DATA_API_KEY", WithDecryption=True)["Parameter"]["Value"]
+        TWELVE_DATA_WS_URL = "wss://ws.twelvedata.com/v1/quotes/price?apikey={TWELVE_DATA_API_KEY}"
     except Exception as e:
         logging.error("The Twelve Data API key is required")
         sys.exit(1)

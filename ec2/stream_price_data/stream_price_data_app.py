@@ -64,7 +64,7 @@ async def main():
 if __name__ == "__main__":
     try:
         TWELVE_DATA_API_KEY = ssm.get_parameter(Name="TWELVE_DATA_API_KEY", WithDecryption=True)["Parameter"]["Value"]
-        TWELVE_DATA_WS_URL = "wss://ws.twelvedata.com/v1/quotes/price?apikey={TWELVE_DATA_API_KEY}"
+        TWELVE_DATA_WS_URL = "wss://ws.twelvedata.com/v1/quotes/price?apikey={}".format(TWELVE_DATA_API_KEY)
     except Exception as e:
         logging.error("The Twelve Data API key is required")
         sys.exit(1)

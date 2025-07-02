@@ -8,12 +8,9 @@ PARAM_JSON=$(aws ssm get-parameters \
   --with-decryption \
   --region us-east-1)
 
-read -r DYNU_API_KEY DYNU_USERNAME DYNU_PASSWORD < <(
-  echo "$PARAM_JSON" | jq -r '
-    .Parameters | map({(.Name): .Value}) | add |
-    "\(.DYNU_API_KEY) \(.DYNU_USERNAME) \(.DYNU_PASSWORD)"
-  '
-)
+DYNU_API_KEY=$(echo "$PARAM_JSON" | jq -r '.Parameters[] | select(.Name=="DYNU_API_KEY") | .Value')
+DYNU_USERNAME=$(echo "$PARAM_JSON" | jq -r '.Parameters[] | select(.Name=="DYNU_USERNAME") | .Value')
+DYNU_PASSWORD=$(echo "$PARAM_JSON" | jq -r '.Parameters[] | select(.Name=="DYNU_PASSWORD") | .Value')
 
 if [[ -z "$DYNU_API_KEY" || -z "$DYNU_USERNAME" || -z "$DYNU_PASSWORD" ]]; then
   echo "[`date`] ❌ Missing required Dynu credentials"

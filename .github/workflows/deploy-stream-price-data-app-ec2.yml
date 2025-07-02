@@ -50,6 +50,9 @@ jobs:
               "aws s3 cp s3://'"$BUCKET_NAME"'/'"$ZIP_NAME"' stream_price_data_app.zip",
               "rm -rf app && mkdir app && unzip stream_price_data_app.zip -d app",
               "pip3 install --user -r app/requirements.txt",
+              "echo Updating Dynu IP...",
+              "chmod +x ./app/update_dynu_ip.sh",
+              "./app/update_dynu_ip.sh >> dynu_update.log 2>&1",
               "echo Starting service...",
               "sudo systemctl start streamer.service"
             ]' \

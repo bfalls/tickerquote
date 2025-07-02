@@ -2,7 +2,7 @@
 
 **TickerQuote** is a cost-efficient, real-time stock strategy platform built using AWS services, React/TypeScript, Python, and GitHub Actions. It provides fundamental screening and real-time price analysis of U.S. stocks, with a strong emphasis on security, automation, and minimal operating cost.
 
-## 🌐 Project Overview
+## Project Overview
 
 The system is composed of three primary components:
 
@@ -21,7 +21,7 @@ The system is composed of three primary components:
    - Streams live stock prices to clients.
    - Uses `systemd` and a custom service (`streamer.service`) to ensure the app is resilient and restartable.
 
-## 🔐 Security Architecture
+## Security Architecture
 
 - **Secrets Management**
   - All secrets used in the Lambda functions are stored in **AWS SSM Parameter Store (SecureString)**.
@@ -32,7 +32,7 @@ The system is composed of three primary components:
   - No secrets are ever exposed to the frontend client.
   - The website fetches public JSON files from S3 and receives live pricing from a public WebSocket hosted on the EC2 instance.
 
-## ⚙️ GitHub Actions & CI/CD
+## GitHub Actions & CI/CD
 
 - GitHub Actions is configured to:
   - Package and deploy the Lambda functions on every commit.
@@ -41,14 +41,14 @@ The system is composed of three primary components:
 
 - The deployment is fully automated and triggered by successful pushes to the `main` branch. This may be customized in the future as development workflows evolve.
 
-## 🌍 Dynamic DNS with Dynu & Zero Fixed IP Cost
+## Dynamic DNS with Dynu & Zero Fixed IP Cost
 
 - To avoid the cost of a static Elastic IP (EIP), the EC2 instance uses **Dynu Dynamic DNS**:
   - At boot, a script updates Dynu with the current public IP via a script.
   - A `stock-strategy.ddnsfree.com` hostname is maintained with Dynu and used for SSH and WebSocket connections.
   - Systemd runs this script before starting the streaming service, ensuring the IP is always current.
 
-## 💰 Cost Optimization
+## Cost Optimization
 
 This project was engineered to run **entirely within AWS Free Tier limits**:
 
@@ -57,7 +57,7 @@ This project was engineered to run **entirely within AWS Free Tier limits**:
 - **EC2**: Runs only during market hours via manual or scheduled automation.
 - **No Elastic IP**: Dynamic DNS removes the need for a static IP.
 
-## 🧪 Strategy Logic
+## Strategy Logic
 
 The stock strategy logic is written to be extensible and currently includes:
 
@@ -66,7 +66,7 @@ The stock strategy logic is written to be extensible and currently includes:
 
 Strategy logic runs in both Lambda and browser (via filtered JSON), enabling rapid iteration and transparency.
 
-## 📁 Directory Structure (Simplified)
+## Directory Structure (Simplified)
 
 ```
 tickerquote-main/
@@ -83,7 +83,7 @@ tickerquote-main/
 │   └── deploy-ec2.yml
 ```
 
-## 🚀 Getting Started
+## Getting Started
 
 To clone and deploy your own version:
 
@@ -99,7 +99,7 @@ Ensure you configure:
 
 Then simply push changes to `main` and watch your infrastructure update itself.
 
-## 🙌 Credits
+## Credits
 
 Created and maintained by Barnaby Falls.  
 Built to maximize transparency, automation, and cost-efficiency.

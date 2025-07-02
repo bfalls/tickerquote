@@ -10,7 +10,7 @@ API_KEY=$(aws ssm get-parameter \
   --output text \
   --region us-east-1)
 
-DOMAIN="stock-strategy.freedns.org"
+DOMAIN="stock-strategy.ddnsfree.com"
 
 # Get public IP using IMDSv2
 TOKEN=$(curl -s -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 60")

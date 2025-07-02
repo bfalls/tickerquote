@@ -18,7 +18,6 @@ logging.basicConfig(level=logging.INFO)
 clients = set()
 
 async def twelve_data_stream(symbol: str, websocket):
-    logging.info(f"Connecting to Twelve Data WS at {TWELVE_DATA_WS_URL}")
     async with connect(TWELVE_DATA_WS_URL) as td_ws:
         await td_ws.send(json.dumps({
             "action": "subscribe",

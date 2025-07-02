@@ -2,13 +2,16 @@
 
 echo "[`date`] Starting Dynu IP update..."
 
-# Load Dynu API key securely from SSM
-API_KEY=$(aws ssm get-parameter \
-  --name "DYNU_API_KEY" \
+# Load Dynu secrets from SSM
+PARAM_JSON=$(aws ssm get-parameters \
+  --names "DYNU_API_KEY" "DYNU_USERNAME" "DYNU_PASSWORD" \
   --with-decryption \
-  --query "Parameter.Value" \
-  --output text \
   --region us-east-1)
+
+DYNU_API_KEY=$(echo "$PARAM_JSON" | jq -r '.Parameters[] | select(.Name=="DYNU_API_KEY") | .Value')
+DYNU_USERNAME=$(echo "$PARAM_JSON" | jq -r '.Parameters[] | select(.Name=="DYNU_USERNAME") | .Value')
+DYNU_PASSWORD=$(echo "$PARAM_JSON" | jq -r '.Parameters[] | select(.Name=="DYNU_PASSWORD") | .Value')
+
 
 DOMAIN="stock-strategy.ddnsfree.com"
 
@@ -18,5 +21,7 @@ CURRENT_IP=$(curl -s -H "X-aws-ec2-metadata-token: $TOKEN" http://169.254.169.25
 echo "[`date`] Current public IP: $CURRENT_IP"
 
 # Send IP update to Dynu
-RESPONSE=$(curl -s -X POST "https://api.dynu.com/nic/update?hostname=$DOMAIN&myip=$CURRENT_IP" -H "Auth-Token: $API_KEY")
+AUTH_HEADER=$(printf "%s:%s" "$DYNU_USERNAME" "$DYNU_PASSWORD" | base64)
+RESPONSE=$(curl -v "https://api.dynu.com/nic/update?hostname=$DOMAIN&myip=$CURRENT_IP" \
+  -H "Authorization: Basic $AUTH_HEADER")
 echo "[`date`] Dynu response: $RESPONSE" 

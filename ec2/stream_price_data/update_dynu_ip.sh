@@ -22,6 +22,6 @@ echo "[`date`] Current public IP: $CURRENT_IP"
 
 # Send IP update to Dynu
 AUTH_HEADER=$(printf "%s:%s" "$DYNU_USERNAME" "$DYNU_PASSWORD" | base64)
-RESPONSE=$(curl -v "https://api.dynu.com/nic/update?hostname=$DOMAIN&myip=$CURRENT_IP" \
+RESPONSE=$(curl -s "https://api.dynu.com/nic/update?hostname=$DOMAIN&myip=$CURRENT_IP" \
   -H "Authorization: Basic $AUTH_HEADER")
-echo "[`date`] Dynu response: $RESPONSE" 
+echo "$(date '+%Y-%m-%d %H:%M:%S') Dynu update response: $RESPONSE"

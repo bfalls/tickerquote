@@ -52,7 +52,7 @@ jobs:
               "pip3 install --user -r app/requirements.txt",
               "echo Updating Dynu IP...",
               "chmod +x ./app/update_dynu_ip.sh",
-              "./app/update_dynu_ip.sh >> dynu_update.log 2>&1",
+              "./app/update_dynu_ip.sh >> dynu_ip_update.log 2>&1",
               "echo Starting service...",
               "sudo systemctl start streamer.service"
             ]' \

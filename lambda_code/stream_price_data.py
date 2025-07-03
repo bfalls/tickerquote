@@ -33,9 +33,7 @@ def lambda_handler(event, context):
     
     body = event.get('body')
     if not body:
-    # symbol = event.get('symbol')
-    # if not symbol:
-        return {
+       return {
             "statusCode": 400,
             "body": "Missing body"
         }

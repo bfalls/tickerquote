@@ -7,6 +7,7 @@ import {
   type UTCTimestamp,
   type CandlestickData,
 } from "lightweight-charts";
+const apiUrl = import.meta.env.VITE_OHLCV_API_URL;
 
 interface Props {
   symbol: string | null;
@@ -54,9 +55,7 @@ export const StrategyDetail: React.FC<Props> = ({ symbol }) => {
 
     const fetchHistoricalData = async () => {
       try {
-        const res = await fetch(
-          `https://rndszz8alj.execute-api.us-east-1.amazonaws.com/default/ohlcv?symbol=${symbol}`
-        );
+        const res = await fetch(`${apiUrl}?symbol=${symbol}`);
         const json = (await res.json()) as OHLCVResponse;
         const rawValues = json?.values || [];
 
@@ -81,9 +80,7 @@ export const StrategyDetail: React.FC<Props> = ({ symbol }) => {
   }, [symbol]);
 
   useEffect(() => {
-    const ws = new WebSocket(
-      `wss://ws.twelvedata.com/v1/quotes/price?apikey=YOUR_API_KEY`
-    );
+    const ws = new WebSocket(import.meta.env.VITE_WEBSOCKET_URL);
     wsRef.current = ws;
 
     ws.onopen = () => {

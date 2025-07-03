@@ -27,18 +27,18 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Pull env vars from SSM
-        run: ../scripts/fetch_vite_env.sh
-
-      - name: Build Vite frontend
-        run: npm run build
-
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v2
         with:
           aws-access-key-id: ${{ secrets.AWS_FRONTEND_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_FRONTEND_SECRET_ACCESS_KEY }}
           aws-region: us-east-2
+
+      - name: Pull env vars from SSM
+        run: ../scripts/fetch_vite_env.sh
+
+      - name: Build Vite frontend
+        run: npm run build
 
       - name: Upload static assets with long cache
         run: |
@@ -60,7 +60,7 @@ jobs:
 
       - name: Upload build artifact
         if: always()
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: frontend-dist
           path: stock-strategy-app/dist/

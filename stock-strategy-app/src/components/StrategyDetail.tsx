@@ -5,10 +5,26 @@ import {
   type IChartApi,
   type ISeriesApi,
   type UTCTimestamp,
+  type CandlestickData,
 } from "lightweight-charts";
 
 interface Props {
   symbol: string | null;
+}
+
+interface OHLCVValue {
+  datetime: string;
+  open: string;
+  high: string;
+  low: string;
+  close: string;
+  volume: string;
+}
+
+interface OHLCVResponse {
+  meta: unknown;
+  values: OHLCVValue[];
+  status: string;
 }
 
 export const StrategyDetail: React.FC<Props> = ({ symbol }) => {
@@ -26,19 +42,43 @@ export const StrategyDetail: React.FC<Props> = ({ symbol }) => {
       height: 300,
     });
 
-    const candleSeries = chart.addSeries(CandlestickSeries, {});
-
-    candleSeries.setData([
-      { time: "2025-06-01", open: 150, high: 160, low: 148, close: 155 },
-      { time: "2025-06-02", open: 155, high: 162, low: 150, close: 158 },
-      { time: "2025-06-03", open: 158, high: 165, low: 157, close: 161 },
-    ]);
-
+    const series = chart.addSeries(CandlestickSeries, {});
+    candleSeriesRef.current = series;
     chartInstanceRef.current = chart;
-    candleSeriesRef.current = candleSeries;
 
     return () => chart.remove();
   }, []);
+
+  useEffect(() => {
+    if (!symbol || !candleSeriesRef.current) return;
+
+    const fetchHistoricalData = async () => {
+      try {
+        const res = await fetch(
+          `https://rndszz8alj.execute-api.us-east-1.amazonaws.com/default/ohlcv?symbol=${symbol}`
+        );
+        const json = (await res.json()) as OHLCVResponse;
+        const rawValues = json?.values || [];
+
+        const formattedData: CandlestickData[] = rawValues
+          .map((d) => ({
+            time: d.datetime,
+            open: +d.open,
+            high: +d.high,
+            low: +d.low,
+            close: +d.close,
+          }))
+          .reverse(); // ensure oldest to newest
+
+        candleSeriesRef.current!.setData(formattedData);
+        chartInstanceRef.current?.timeScale().fitContent();
+      } catch (err) {
+        console.error("Failed to fetch historical data:", err);
+      }
+    };
+
+    fetchHistoricalData();
+  }, [symbol]);
 
   useEffect(() => {
     const ws = new WebSocket(

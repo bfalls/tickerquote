@@ -18,7 +18,9 @@ logging.basicConfig(level=logging.INFO)
 clients = set()
 
 async def twelve_data_stream(symbol: str, websocket):
+    # Connect to Twelve Data WebSocket using the shared API key
     async with connect(TWELVE_DATA_WS_URL) as td_ws:
+        # Subscribe to a specific stock symbol for streaming price updates
         await td_ws.send(json.dumps({
             "action": "subscribe",
             "params": {
@@ -29,12 +31,14 @@ async def twelve_data_stream(symbol: str, websocket):
         logging.info(f"Subscribed to {symbol} for client")
 
         try:
+            # Relay the message from Twelve Data to the original client
             while True:
                 msg = await td_ws.recv()
                 await websocket.send(msg)
         except (ConnectionClosedOK, ConnectionClosedError):
             logging.info(f"Client disconnected: {symbol}")
         finally:
+            # clean up the subscription on disconnect
             await td_ws.send(json.dumps({
                 "action": "unsubscribe",
                 "params": {"symbols": symbol}
@@ -51,17 +55,20 @@ async def handle_client(websocket):
             await websocket.send(json.dumps({"error": "Missing symbol"}))
             return
 
+        # Begin streaming prices for the requested symbol
         await twelve_data_stream(symbol, websocket)
     except json.JSONDecodeError:
         await websocket.send(json.dumps({"error": "Invalid JSON"}))
 
 async def main():
+    # Launch a WebSocket server to handle client subscriptions
     async with serve(handle_client, "0.0.0.0", PORT):
         logging.info(f"Streaming server running on port {PORT}")
         await asyncio.Future()  # run forever
 
 if __name__ == "__main__":
     try:
+        # Get the Twelve Data API key from SSM
         TWELVE_DATA_API_KEY = ssm.get_parameter(Name="TWELVE_DATA_API_KEY", WithDecryption=True)["Parameter"]["Value"]
         TWELVE_DATA_WS_URL = "wss://ws.twelvedata.com/v1/quotes/price?apikey={}".format(TWELVE_DATA_API_KEY)
     except Exception as e:

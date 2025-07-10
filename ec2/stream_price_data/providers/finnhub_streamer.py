@@ -1,10 +1,12 @@
+import asyncio
 import json
 import logging
 import os
 import boto3
-from websockets import connect
+from typing import Callable, Awaitable
+from websockets import ClientConnection, connect
 
-from ec2.stream_price_data.providers.base_provider import BasePriceStreamer
+from providers.base_provider import BasePriceStreamer, WebSocketLike
 
 AWS_REGION = os.environ.get("AWS_REGION", "us-east-1")
 
@@ -12,7 +14,45 @@ class FinnhubStreamer(BasePriceStreamer):
     def __init__(self):
         self.api_key = self._get_api_key()
         self.ws_url = f"wss://ws.finnhub.io?token={self.api_key}"
+        self.connection: ClientConnection | None = None
+        self.callback = None
+        
+    async def _listen(self):
+        if self.connection is None:
+            return
+        
+        try:
+            async for message in self.connection:
+                data = json.loads(message)
+                if data.get("type") == "trade":
+                    for trade in data.get("data", []):
+                        update = {
+                            "symbol": trade.get("s"),
+                            "price": trade.get("p"),
+                            "timestamp": trade.get("t") // 1_000_000,  # nanoseconds to ms
+                            "volume": trade.get("v")
+                        }
+                        if self.callback:
+                            await self.callback(update)
+        except Exception as e:
+            # You can add structured logging here
+            pass
+        
+    async def connect(self):
+        self.connection = await connect(self.ws_url)
 
+    async def subscribe(self, symbol: str, callback: Callable[[dict], Awaitable[None]]) -> None:
+        if self.connection is None:
+            await self.connect()
+
+        assert self.connection is not None
+        self.callback = callback
+        await self.connection.send(json.dumps({
+            "type": "subscribe",
+            "symbol": symbol
+        }))
+        asyncio.create_task(self._listen())
+        
     def _get_api_key(self) -> str:
         ssm = boto3.client("ssm", region_name=AWS_REGION)
         try:
@@ -48,3 +88,21 @@ class FinnhubStreamer(BasePriceStreamer):
                             }))
             except Exception as e:
                 logging.error(f"Streaming error for {symbol} on Finnhub: {e}")
+
+    async def unsubscribe(self, symbol: str) -> None:
+        if self.connection is None:
+            return
+
+        await self.connection.send(json.dumps({
+            "type": "unsubscribe",
+            "symbol": symbol
+        }))
+
+    async def disconnect(self) -> None:
+        if self.connection:
+            await self.connection.close()
+            self.connection = None
+
+    # async def stream(self, symbol: str, websocket: WebSocketLike) -> None:
+    #     # Optional: Implement streaming logic if needed, or just await something
+    #     await asyncio.sleep(0)

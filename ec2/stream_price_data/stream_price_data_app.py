@@ -2,11 +2,13 @@ import asyncio
 import logging
 import os
 import importlib
+from typing import Type
+from providers.base_provider import BasePriceStreamer
 
 import boto3
 from websockets import serve
 
-from ec2.stream_price_data.client_handler import handle_client_connection
+from client_handler import handle_client_connection
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
@@ -16,7 +18,7 @@ logger = logging.getLogger(__name__)
 SSM_PROVIDER_PARAM = "/tickerquote/stream_provider"
 DEFAULT_PROVIDER = "TwelveData"  # fallback
 
-def get_stream_provider_class():
+def get_stream_provider_class() -> Type[BasePriceStreamer]:
     """Fetch the provider name from AWS SSM and dynamically import the provider class."""
     ssm = boto3.client("ssm", region_name=os.environ.get("AWS_REGION", "us-east-1"))
     try:
@@ -26,7 +28,7 @@ def get_stream_provider_class():
         logger.warning(f"Could not fetch provider from SSM: {e}. Using default '{DEFAULT_PROVIDER}'")
         provider_name = DEFAULT_PROVIDER
 
-    module_path = f"ec2.stream_price_data.providers.{provider_name.lower()}_streamer"
+    module_path = f"providers.{provider_name.lower()}_streamer"
     class_name = f"{provider_name}Streamer"
 
     try:
@@ -41,7 +43,7 @@ def get_stream_provider_class():
 async def main():
     provider_class = get_stream_provider_class()
     async with serve(
-        lambda ws: handle_client_connection(ws, provider_class),
+        lambda ws: handle_client_connection(ws, provider_class()),
         "0.0.0.0",
         8080,
     ):

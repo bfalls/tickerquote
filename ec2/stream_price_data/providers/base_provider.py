@@ -21,25 +21,25 @@ class BasePriceStreamer(ABC):
     remains consistent and decoupled from the provider's API structure.
     """
 
-    @abstractmethod
-    async def stream(self, symbol: str, websocket: WebSocketLike) -> None:
-        """
-        Starts streaming prices for a given symbol to the provided WebSocket client.
+    # @abstractmethod
+    # async def stream(self, symbol: str, websocket: WebSocketLike) -> None:
+    #     """
+    #     Starts streaming prices for a given symbol to the provided WebSocket client.
 
-        Implementations must:
-        - Connect to the third-party WebSocket
-        - Subscribe to the given symbol
-        - Forward each price update in a consistent message format
+    #     Implementations must:
+    #     - Connect to the third-party WebSocket
+    #     - Subscribe to the given symbol
+    #     - Forward each price update in a consistent message format
 
-        The outgoing message format MUST follow:
-        {
-            "event": "price",
-            "symbol": "AAPL",
-            "price": 123.45,
-            "source": "providername"
-        }
-        """
-        pass
+    #     The outgoing message format MUST follow:
+    #     {
+    #         "event": "price",
+    #         "symbol": "AAPL",
+    #         "price": 123.45,
+    #         "source": "providername"
+    #     }
+    #     """
+    #     pass
     
     @abstractmethod
     async def connect(self) -> None:

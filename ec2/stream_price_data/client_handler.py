@@ -1,6 +1,6 @@
 import json
 import logging
-from ec2.stream_price_data.providers.base_provider import BasePriceStreamer
+from providers.base_provider import BasePriceStreamer
 
 logger = logging.getLogger(__name__)
 
@@ -28,8 +28,7 @@ class ClientConnectionHandler:
             action = data.get("action")
 
             if action == "subscribe":
-                params = data.get("params", {})
-                symbols = params.get("symbols", "").split(",")
+                symbols = data.get("symbols", "").split(",")
                 for symbol in symbols:
                     symbol = symbol.strip().upper()
                     if symbol:
@@ -57,6 +56,9 @@ class ClientConnectionHandler:
     async def cleanup(self):
         logger.info("Cleaning up client subscriptions")
         for symbol in self.subscribed_symbols:
+            # logger.info(f"Streamer instance: {self.streamer}")
+            # logger.info(f"Streamer class: {type(self.streamer)}")
+            # logger.info(f"unsubscribe is method: {callable(getattr(self.streamer, 'unsubscribe', None))}")
             await self.streamer.unsubscribe(symbol)
         self.subscribed_symbols.clear()
 

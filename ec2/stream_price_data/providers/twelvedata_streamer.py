@@ -4,7 +4,7 @@ import os
 import boto3
 from websockets import connect
 
-from ec2.stream_price_data.providers.base_provider import BasePriceStreamer
+from providers.base_provider import BasePriceStreamer
 
 AWS_REGION = os.environ.get("AWS_REGION", "us-east-1")
 

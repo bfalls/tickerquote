@@ -1,0 +1,23 @@
+{
+  "name": "tickerquote",
+  "version": "1.0.0",
+  "description": "**TickerQuote** is a cost-efficient, real-time stock strategy platform built using AWS services, React/TypeScript, Python, and GitHub Actions. It provides fundamental screening and real-time price analysis of U.S. stocks, with a strong emphasis on security, automation, and minimal operating cost.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "ziprepo": "rm -f tickerquote-repo.zip && git archive --format=zip --output=tickerquote-repo.zip HEAD && osascript -e 'on run argv' -e 'set the clipboard to item 1 of argv as «class furl»' -e 'end run' \"$(pwd)/tickerquote-repo.zip\"",
+    "zip": "rm -f tickerquote-current.zip && git ls-files -o --exclude-standard --cached | zip tickerquote-current.zip -@ && osascript -e 'on run argv' -e 'set the clipboard to item 1 of argv as «class furl»' -e 'end run' \"$(pwd)/tickerquote-current.zip\""
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bfalls/tickerquote.git"
+  },
+  "keywords": [],
+  "author": "Barnaby Falls <bfalls@outlook.com>",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/bfalls/tickerquote/issues"
+  },
+  "homepage": "https://github.com/bfalls/tickerquote#readme"
+}

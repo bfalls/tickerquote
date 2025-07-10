@@ -3,8 +3,9 @@ import json
 import logging
 import os
 import boto3
-from typing import Callable, Awaitable
-from websockets import ClientConnection, connect
+from typing import Callable, Awaitable, cast
+from websockets import connect
+# from websockets.client import ClientConnection
 
 from providers.base_provider import BasePriceStreamer, WebSocketLike
 
@@ -14,7 +15,8 @@ class FinnhubStreamer(BasePriceStreamer):
     def __init__(self):
         self.api_key = self._get_api_key()
         self.ws_url = f"wss://ws.finnhub.io?token={self.api_key}"
-        self.connection: ClientConnection | None = None
+        # self.connection: ClientConnection | None = None
+        self.connection: WebSocketLike | None = None
         self.callback = None
         
     async def _listen(self):
@@ -22,7 +24,8 @@ class FinnhubStreamer(BasePriceStreamer):
             return
         
         try:
-            async for message in self.connection:
+            while True:
+                message = await self.connection.recv()
                 data = json.loads(message)
                 if data.get("type") == "trade":
                     for trade in data.get("data", []):
@@ -35,11 +38,11 @@ class FinnhubStreamer(BasePriceStreamer):
                         if self.callback:
                             await self.callback(update)
         except Exception as e:
-            # You can add structured logging here
+            # Log errors here
             pass
         
     async def connect(self):
-        self.connection = await connect(self.ws_url)
+        self.connection = cast(WebSocketLike, await connect(self.ws_url))
 
     async def subscribe(self, symbol: str, callback: Callable[[dict], Awaitable[None]]) -> None:
         if self.connection is None:
@@ -102,7 +105,3 @@ class FinnhubStreamer(BasePriceStreamer):
         if self.connection:
             await self.connection.close()
             self.connection = None
-
-    # async def stream(self, symbol: str, websocket: WebSocketLike) -> None:
-    #     # Optional: Implement streaming logic if needed, or just await something
-    #     await asyncio.sleep(0)

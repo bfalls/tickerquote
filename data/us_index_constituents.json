@@ -1,5 +1,5 @@
 {
-  "version": "2025-06-09",
+  "version": "2025-07-07",
   "companies": [
     {
       "Symbol": "A",
@@ -3251,18 +3251,6 @@
       "Founded": "1886",
       "indexes": [
         "Dow Jones",
-        "S&P 500"
-      ]
-    },
-    {
-      "Symbol": "JNPR",
-      "Security": "Juniper Networks",
-      "GICS Sector": "Information Technology",
-      "GICS Sub-Industry": "Communications Equipment",
-      "Headquarters Location": "Sunnyvale, California",
-      "Date added": "2006-06-02",
-      "Founded": "1996",
-      "indexes": [
         "S&P 500"
       ]
     },

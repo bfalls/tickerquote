@@ -1,5 +1,5 @@
 {
-  "version": "2025-07-07",
+  "version": "2025-07-14",
   "companies": [
     {
       "Symbol": "A",
@@ -1654,11 +1654,12 @@
       "Security": "Datadog",
       "GICS Sector": "Information Technology",
       "GICS Sub-Industry": "Application Software",
-      "Headquarters Location": null,
-      "Date added": null,
-      "Founded": null,
+      "Headquarters Location": "New York City, New York",
+      "Date added": "2025-07-09",
+      "Founded": "2010",
       "indexes": [
-        "NASDAQ-100"
+        "NASDAQ-100",
+        "S&P 500"
       ]
     },
     {

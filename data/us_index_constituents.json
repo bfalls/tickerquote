@@ -1,5 +1,5 @@
 {
-  "version": "2025-07-14",
+  "version": "2025-07-21",
   "companies": [
     {
       "Symbol": "A",
@@ -408,19 +408,6 @@
       "Date added": "2018-08-28",
       "Founded": "2004",
       "indexes": [
-        "S&P 500"
-      ]
-    },
-    {
-      "Symbol": "ANSS",
-      "Security": "Ansys",
-      "GICS Sector": "Information Technology",
-      "GICS Sub-Industry": "Application Software",
-      "Headquarters Location": "Canonsburg, Pennsylvania",
-      "Date added": "2017-06-19",
-      "Founded": "1969",
-      "indexes": [
-        "NASDAQ-100",
         "S&P 500"
       ]
     },
@@ -5680,11 +5667,12 @@
       "Security": "Trade Desk (The)",
       "GICS Sector": "Communication Services",
       "GICS Sub-Industry": "Advertising",
-      "Headquarters Location": null,
-      "Date added": null,
-      "Founded": null,
+      "Headquarters Location": "Ventura, California",
+      "Date added": "2025-07-18",
+      "Founded": "2009",
       "indexes": [
-        "NASDAQ-100"
+        "NASDAQ-100",
+        "S&P 500"
       ]
     },
     {

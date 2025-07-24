@@ -1,5 +1,5 @@
 {
-  "version": "2025-07-21",
+  "version": "2025-07-24",
   "companies": [
     {
       "Symbol": "A",
@@ -2763,18 +2763,6 @@
       "Founded": "1978",
       "indexes": [
         "Dow Jones",
-        "S&P 500"
-      ]
-    },
-    {
-      "Symbol": "HES",
-      "Security": "Hess Corporation",
-      "GICS Sector": "Energy",
-      "GICS Sub-Industry": "Integrated Oil & Gas",
-      "Headquarters Location": "New York City, New York",
-      "Date added": "1984-05-31",
-      "Founded": "1919",
-      "indexes": [
         "S&P 500"
       ]
     },
@@ -6246,6 +6234,18 @@
       "Headquarters Location": "White Plains, New York",
       "Date added": "2011-11-01",
       "Founded": "2011",
+      "indexes": [
+        "S&P 500"
+      ]
+    },
+    {
+      "Symbol": "XYZ",
+      "Security": "Block, Inc.",
+      "GICS Sector": "Financials",
+      "GICS Sub-Industry": "Transaction & Payment Processing Services",
+      "Headquarters Location": "none",
+      "Date added": "2025-07-23",
+      "Founded": "2009",
       "indexes": [
         "S&P 500"
       ]

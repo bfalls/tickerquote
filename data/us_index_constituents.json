@@ -1,5 +1,5 @@
 {
-  "version": "2025-07-24",
+  "version": "2025-07-31",
   "companies": [
     {
       "Symbol": "A",
@@ -5562,6 +5562,18 @@
       "Founded": "2005",
       "indexes": [
         "S&P 500"
+      ]
+    },
+    {
+      "Symbol": "TRI",
+      "Security": "Thomson Reuters",
+      "GICS Sector": "Industrials",
+      "GICS Sub-Industry": "Research & Consulting Services",
+      "Headquarters Location": null,
+      "Date added": null,
+      "Founded": null,
+      "indexes": [
+        "NASDAQ-100"
       ]
     },
     {

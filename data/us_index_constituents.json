@@ -1,5 +1,5 @@
 {
-  "version": "2025-07-31",
+  "version": "2025-08-11",
   "companies": [
     {
       "Symbol": "A",
@@ -4479,18 +4479,6 @@
       "Founded": "2005",
       "indexes": [
         "NASDAQ-100",
-        "S&P 500"
-      ]
-    },
-    {
-      "Symbol": "PARA",
-      "Security": "Paramount Global",
-      "GICS Sector": "Communication Services",
-      "GICS Sub-Industry": "Movies & Entertainment",
-      "Headquarters Location": "New York City, New York",
-      "Date added": "1994-09-30",
-      "Founded": "2019 (Paramount Pictures 1912)",
-      "indexes": [
         "S&P 500"
       ]
     },

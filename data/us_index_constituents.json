@@ -1,5 +1,5 @@
 {
-  "version": "2025-08-11",
+  "version": "2025-08-14",
   "companies": [
     {
       "Symbol": "A",
@@ -4795,6 +4795,18 @@
       "Headquarters Location": "Glendale, California",
       "Date added": "2005-08-19",
       "Founded": "1972",
+      "indexes": [
+        "S&P 500"
+      ]
+    },
+    {
+      "Symbol": "PSKY",
+      "Security": "Paramount Skydance Corporation",
+      "GICS Sector": "Communication Services",
+      "GICS Sub-Industry": "Movies & Entertainment",
+      "Headquarters Location": "Los Angeles, California",
+      "Date added": "1994-09-30",
+      "Founded": "2025 (Paramount Pictures 1912)",
       "indexes": [
         "S&P 500"
       ]

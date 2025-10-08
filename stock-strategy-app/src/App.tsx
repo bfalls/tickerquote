@@ -37,8 +37,8 @@ function App() {
     undefined
   );
 
-  const [showCard, setShowCard] = useState(false);
-  const [selectedStockData, setSelectedStockData] = useState<{
+  const [_showCard, setShowCard] = useState(false);
+  const [_selectedStockData, setSelectedStockData] = useState<{
     symbol: string;
     pe: number;
     pb: number;

@@ -111,8 +111,8 @@ function clamp01(n: number) {
   if (Number.isNaN(n)) return 0;
   return Math.max(0, Math.min(1, n));
 }
-function fmtPct(n?: number) {
-  return n != null ? `${n.toFixed(1)}%` : "";
+function fmtPct(n?: number, d: number = 1) {
+  return n != null ? `${n.toFixed(d)}%` : "";
 }
 function fmtNum(n?: number) {
   return n != null ? n.toFixed(1) : "";

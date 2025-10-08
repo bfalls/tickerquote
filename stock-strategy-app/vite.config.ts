@@ -5,4 +5,5 @@ import react from '@vitejs/plugin-react'
 export default defineConfig({
   base: "./", // relative paths for S3/CloudFront
   plugins: [react()],
+  assetsInclude: ["**/*.riv"],
 });

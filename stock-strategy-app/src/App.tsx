@@ -10,6 +10,10 @@ import { FilterControls } from "./components/FilterControls";
 import { StrategyDetail } from "./components/StrategyDetail";
 import "./App.css";
 
+import "./styles/rive-text-overlay.css";
+import BouncingTextOverlay from "./components/BouncingTextOverlay";
+import StockCardFloat from "./components/StockCardFloat";
+
 function App() {
   // believe it or not, all helpers to get around Typescript type safety issues...
   const strategyKeys = typedKeys(strategies);
@@ -32,6 +36,20 @@ function App() {
   const [debtToEquity, setDebtToEquity] = useState<number | undefined>(
     undefined
   );
+
+  const [showCard, setShowCard] = useState(false);
+  const [selectedStockData, setSelectedStockData] = useState<{
+    symbol: string;
+    pe: number;
+    pb: number;
+    de: number;
+    net?: number; // Net profit margin (%)
+    roe?: number; // ROE (%)
+    opm?: number; // Operating margin (%)
+    fwdPE?: number; // Forward P/E
+    revG?: number; // Revenue growth YoY (%)
+    div?: number; // Dividend yield (%)
+  } | null>(null);
 
   const fetchFundamentals = async (signal?: AbortSignal) => {
     fetch(
@@ -136,7 +154,36 @@ function App() {
               stocks={fundamentals}
               filters={{ peRatio, pbRatio, debtToEquity }}
               selectedSymbol={selectedSymbol}
-              onSelect={setSelectedSymbol}
+              // onSelect={setSelectedSymbol}
+              onSelect={(symbol) => {
+                setSelectedSymbol(symbol);
+                const selected = fundamentals.find((s) => s.symbol === symbol);
+                if (selected && selected.metric) {
+                  const m = selected.metric;
+                  setSelectedStockData({
+                    symbol: selected.symbol,
+                    pe: normalizePE(selected.metric.peTTM),
+                    pb: normalizePB(selected.metric.pb),
+                    de: normalizeDE(
+                      selected.metric["totalDebt/totalEquityAnnual"]
+                    ),
+
+                    // front text runs (raw numbers, you format in StockCardFloat)
+                    net: m.netProfitMarginTTM ?? m.netProfitMarginAnnual,
+                    roe: m.roeTTM ?? m.roeRfy ?? m.roe5Y,
+                    opm: m.operatingMarginTTM ?? m.operatingMarginAnnual,
+                    fwdPE: m.peTTM,
+                    revG:
+                      m.revenueGrowthTTMYoy ??
+                      m.revenueGrowthQuarterlyYoy ??
+                      m.revenueGrowth5Y,
+                    div:
+                      m.currentDividendYieldTTM ??
+                      m.dividendYieldIndicatedAnnual,
+                  });
+                  setShowCard(true);
+                }
+              }}
             />
           </div>
           <div id="detailContainer">
@@ -144,8 +191,71 @@ function App() {
           </div>
         </div>
       </div>
+      {/* Rive overlay (fixed, pointer-events: none; won't affect layout) */}
+      <BouncingTextOverlay />
+      // after your main content (e.g., near <BouncingTextOverlay />)
+      <StockCardFloat
+        show={!!selectedSymbol}
+        stock={
+          selectedSymbol
+            ? (() => {
+                const s = fundamentals.find((f) => f.symbol === selectedSymbol);
+                if (!s || !s.metric) return null;
+                const m = s.metric;
+                return {
+                  symbol: s.symbol,
+                  pe: normalizePE(m.peTTM),
+                  pb: normalizePB(m.pb),
+                  de: normalizeDE(m["totalDebt/totalEquityAnnual"]),
+                  net: m.netProfitMarginTTM ?? m.netProfitMarginAnnual,
+                  roe: m.roeTTM ?? m.roeRfy ?? m.roe5Y,
+                  opm: m.operatingMarginTTM ?? m.operatingMarginAnnual,
+                  fwdPE: m.peTTM,
+                  revG:
+                    m.revenueGrowthTTMYoy ??
+                    m.revenueGrowthQuarterlyYoy ??
+                    m.revenueGrowth5Y,
+                  div:
+                    m.currentDividendYieldTTM ??
+                    m.dividendYieldIndicatedAnnual ??
+                    m.dividendPerShareTTM,
+                };
+              })()
+            : null
+        }
+        style={{
+          position: "fixed",
+          right: 24,
+          top: 150,
+          transform: "none",
+        }}
+      />
     </div>
   );
+
+  // function normalize(value?: number): number {
+  //   if (value == null || isNaN(value)) return 0;
+  //   // Clamp to 0–1 range for display (you can adjust scaling logic)
+  //   return Math.max(0, Math.min(1, value / 20)); // e.g. 20 as nominal max
+  // }
+
+  function normalizePE(value?: number) {
+    if (!value || value < 0) return 0;
+    const MAX_PE = 50; // 50 or whatever you choose as “high”
+    return Math.min(value / MAX_PE, 1);
+  }
+
+  function normalizePB(value?: number) {
+    if (!value || value < 0) return 0;
+    const MAX_PB = 10;
+    return Math.min(value / MAX_PB, 1);
+  }
+
+  function normalizeDE(value?: number) {
+    if (!value || value < 0) return 0;
+    const MAX_DE = 5;
+    return Math.min(value / MAX_DE, 1);
+  }
 }
 
 export default App;

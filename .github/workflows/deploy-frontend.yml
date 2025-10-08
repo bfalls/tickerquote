@@ -52,6 +52,11 @@ jobs:
           aws s3 cp dist/index.html s3://tickerquote-frontend/index.html \
             --cache-control "no-cache, no-store, must-revalidate"
 
+      - name: Ensure correct content-types for WASM and RIV
+        run: |
+          aws s3 cp s3://tickerquote-frontend/ s3://tickerquote-frontend/ \
+            --recursive --exclude "*" --include "*.riv" \
+            --metadata-directive REPLACE --content-type "application/octet-stream"
       - name: Invalidate index.html in CloudFront
         run: |
           aws cloudfront create-invalidation \
@@ -59,6 +64,7 @@ jobs:
             --paths "/index.html" \
             || echo "No invalidation needed, nothing changed."
 
+            
       - name: Upload build artifact
         if: always()
         uses: actions/upload-artifact@v4

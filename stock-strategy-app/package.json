@@ -11,6 +11,7 @@
     "zip": "rm -f stock-strategy-app.zip && zip -r stock-strategy-app.zip . -x \"node_modules/*\" \"dist/*\" \".git/*\" \".DS_Store\""
   },
   "dependencies": {
+    "@rive-app/react-canvas": "^4.23.4",
     "lightweight-charts": "^5.0.8",
     "react": "^19.1.0",
     "react-dom": "^19.1.0"

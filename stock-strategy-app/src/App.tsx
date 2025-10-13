@@ -193,7 +193,6 @@ function App() {
       </div>
       {/* Rive overlay (fixed, pointer-events: none; won't affect layout) */}
       <BouncingTextOverlay />
-      // after your main content (e.g., near <BouncingTextOverlay />)
       <StockCardFloat
         show={!!selectedSymbol}
         stock={

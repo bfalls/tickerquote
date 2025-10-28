@@ -179,3 +179,8 @@ cython_debug/
 .pypirc
 
 lambda_payload.zip
+
+public/defold/market-pulse/
+defold/build/
+*.dmanifest
+*.archive

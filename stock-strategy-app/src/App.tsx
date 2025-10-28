@@ -11,7 +11,7 @@ import { StrategyDetail } from "./components/StrategyDetail";
 import "./App.css";
 
 import "./styles/rive-text-overlay.css";
-import BouncingTextOverlay from "./components/BouncingTextOverlay";
+// import BouncingTextOverlay from "./components/BouncingTextOverlay";
 import StockCardFloat from "./components/StockCardFloat";
 
 function App() {
@@ -192,7 +192,7 @@ function App() {
         </div>
       </div>
       {/* Rive overlay (fixed, pointer-events: none; won't affect layout) */}
-      <BouncingTextOverlay />
+      {/* <BouncingTextOverlay /> */}
       <StockCardFloat
         show={!!selectedSymbol}
         stock={

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
   CandlestickSeries,
   createChart,
@@ -7,8 +7,13 @@ import {
   type UTCTimestamp,
   type CandlestickData,
 } from "lightweight-charts";
+import { applyTickToDaily, startFromHistory } from "../utils/priceAggregator";
+import { createPriceStream } from "../services";
+import type { PriceStream, Tick as StreamTick } from "../services/PriceStream";
+
 // Using environment variables for API endpoints allows backend URLs to be changed per environment (dev/prod) without code edits.
 const apiUrl = import.meta.env.VITE_OHLCV_API_URL;
+// const wssUrl = import.meta.env.VITE_PRICE_WSS_URL as string; // tick stream
 
 interface Props {
   symbol: string | null;
@@ -33,11 +38,13 @@ interface OHLCVResponse {
 // Component is kept function-based and uses hooks for clean state/effect management and easier lifecycle reasoning.
 export const StrategyDetail: React.FC<Props> = ({ symbol }) => {
   // useRef is used for mutable values that persist across renders but don't trigger re-renders, such as WebSocket and chart objects.
-  const wsRef = useRef<WebSocket | null>(null);
-  const previousSymbolRef = useRef<string | null>(null);
+  const [seedClose, setSeedClose] = useState<number | undefined>(undefined);
   const chartRef = useRef<HTMLDivElement>(null);
   const candleSeriesRef = useRef<ISeriesApi<"Candlestick"> | null>(null);
   const chartInstanceRef = useRef<IChartApi | null>(null);
+  const lastCandleRef = useRef<CandlestickData<UTCTimestamp> | null>(null);
+  const streamRef = useRef<PriceStream | null>(null);
+  // const symbolRef = useRef<string | undefined>(undefined);
 
   // Chart creation is done once on mount for performance and to avoid flicker on symbol change.
   useEffect(() => {
@@ -46,111 +53,143 @@ export const StrategyDetail: React.FC<Props> = ({ symbol }) => {
     const chart = createChart(chartRef.current!, {
       width: 600,
       height: 300,
+      // layout: {
+      //   background: { type: "Solid", color: "#f5f7fb" },
+      //   textColor: "#222",
+      // },
+      // rightPriceScale: { visible: true, borderVisible: false },
+      // timeScale: { borderVisible: false, secondsVisible: false },
+      // grid: {
+      //   horzLines: { color: "#e6e9ef", visible: true },
+      //   vertLines: { color: "#e6e9ef", visible: true },
+      // },
     });
 
     const series = chart.addSeries(CandlestickSeries, {});
+    // Consider options for styling candles if desired:
+    // {
+    //   upColor: "#26a69a",
+    //   downColor: "#ef5350",
+    //   wickUpColor: "#26a69a",
+    //   wickDownColor: "#ef5350",
+    //   borderVisible: false,
+    // }
     candleSeriesRef.current = series;
     chartInstanceRef.current = chart;
 
+    const onResize = () => {
+      if (chartRef.current) {
+        chart.applyOptions({ width: chartRef.current.clientWidth });
+      }
+    };
+    window.addEventListener("resize", onResize);
+
     // prevent memory leaks on unmount.
-    return () => chart.remove();
+    return () => {
+      window.removeEventListener("resize", onResize);
+      chart.remove();
+    };
   }, []);
 
-  // Whenever the symbol changes, fetch the latest historical data to update the chart accordingly.
+  // On symbol change: fetch history, then create a seeded stream for THIS symbol only.
   useEffect(() => {
     if (!symbol || !candleSeriesRef.current) return;
 
-    const fetchHistoricalData = async () => {
+    let cancelled = false;
+    const currentSymbol = symbol; // capture to prevent cross-symbol bleed
+
+    (async () => {
       try {
-        const res = await fetch(`${apiUrl}?symbol=${symbol}`);
+        const res = await fetch(`${apiUrl}?symbol=${currentSymbol}`);
         const json = (await res.json()) as OHLCVResponse;
         const rawValues = json?.values || [];
 
-        // Formatting and reversing ensures the chart receives data in chronological (oldest to newest) order.
         const formattedData: CandlestickData[] = rawValues
           .map((d) => ({
-            time: d.datetime,
+            time: d.datetime, // BusinessDay string
             open: +d.open,
             high: +d.high,
             low: +d.low,
             close: +d.close,
           }))
-          .reverse(); // ensure oldest to newest
+          .reverse(); // oldest → newest
 
+        if (cancelled) return;
+
+        // 1) show history
         candleSeriesRef.current!.setData(formattedData);
         chartInstanceRef.current?.timeScale().fitContent();
+
+        // 2) derive seed from THIS symbol's history
+        const seed = startFromHistory(formattedData).lastCandle ?? null;
+        const seedClose = seed ? seed.close : undefined;
+
+        // 3) ensure we don't carry a candle from a previous symbol
+        lastCandleRef.current = null;
+
+        // 4) create a NEW stream instance seeded for THIS symbol only
+        const opts =
+          seedClose != null
+            ? { seed: { [currentSymbol]: seedClose } }
+            : undefined;
+        const stream = createPriceStream(opts);
+        streamRef.current = stream;
+
+        const onTick = (t: StreamTick) => {
+          // hard-guard: ignore ticks that aren't for the current symbol or after cancel
+          if (cancelled || t.symbol !== currentSymbol) return;
+          const series = candleSeriesRef.current;
+          if (!series) return;
+
+          const tick = {
+            symbol: t.symbol,
+            price: t.price,
+            timestamp: Math.floor(t.ts / 1000),
+          };
+
+          lastCandleRef.current = applyTickToDaily(
+            tick,
+            lastCandleRef.current, // null on first tick → fresh candle
+            (c) => {
+              lastCandleRef.current = c;
+              series.update(c);
+            }, // onNew
+            (c) => {
+              lastCandleRef.current = c;
+              series.update(c);
+            } // onUpdate
+          );
+        };
+
+        // Attach → subscribe → connect (mock connect() is no-op)
+        stream.onTick(onTick);
+        stream.subscribe([currentSymbol]);
+        await stream.connect();
+
+        if (cancelled) {
+          try {
+            stream.unsubscribe([currentSymbol]);
+          } finally {
+            stream.close();
+          }
+        }
       } catch (err) {
         console.error("Failed to fetch historical data:", err);
       }
-    };
+    })();
 
-    fetchHistoricalData();
-  }, [symbol]);
-
-  // Establish a single persistent WebSocket connection for live price updates, rather than reconnecting on every symbol change.
-  useEffect(() => {
-    const ws = new WebSocket(import.meta.env.VITE_WEBSOCKET_URL);
-    wsRef.current = ws;
-
-    ws.onopen = () => {
-      if (symbol) {
-        ws.send(
-          JSON.stringify({ action: "subscribe", params: { symbols: symbol } })
-        );
-        previousSymbolRef.current = symbol;
-      }
-    };
-
-    ws.onmessage = (event) => {
-      const data = JSON.parse(event.data);
-      if (data.event === "price") {
-        const price = parseFloat(data.price);
-        const time = Math.floor(Date.now() / 1000) as UTCTimestamp; // current time in seconds
-
-        if (candleSeriesRef.current) {
-          // Always update the last candle with the latest price for real-time feedback.
-          candleSeriesRef.current.update({
-            time,
-            open: price,
-            high: price,
-            low: price,
-            close: price,
-          });
+    return () => {
+      cancelled = true;
+      const s = streamRef.current;
+      if (s) {
+        try {
+          s.unsubscribe([currentSymbol]);
+        } finally {
+          s.close();
+          if (streamRef.current === s) streamRef.current = null;
         }
       }
     };
-
-    ws.onerror = (err) => {
-      // Logging WebSocket errors aids in diagnosing connection or backend issues.
-      console.error("WebSocket error:", err);
-    };
-
-    // prevent resource leaks.
-    return () => {
-      ws.close();
-    };
-  }, []);
-
-  // When the symbol changes, send unsubscribe/subscribe messages rather than reconnecting the socket.
-  // This keeps the connection alive and reduces latency and backend load.
-  useEffect(() => {
-    const ws = wsRef.current;
-    const prev = previousSymbolRef.current;
-
-    if (!ws || ws.readyState !== WebSocket.OPEN || !symbol) return;
-
-    // Unsubscribe from the previous symbol to avoid receiving redundant updates.
-    if (prev) {
-      ws.send(
-        JSON.stringify({ action: "unsubscribe", params: { symbols: prev } })
-      );
-    }
-
-    // Subscribe to the new symbol for updated data.
-    ws.send(
-      JSON.stringify({ action: "subscribe", params: { symbols: symbol } })
-    );
-    previousSymbolRef.current = symbol;
   }, [symbol]);
 
   // Layout and fallback UI: this is still pretty simple but clearly communicates

@@ -38,7 +38,6 @@ interface OHLCVResponse {
 // Component is kept function-based and uses hooks for clean state/effect management and easier lifecycle reasoning.
 export const StrategyDetail: React.FC<Props> = ({ symbol }) => {
   // useRef is used for mutable values that persist across renders but don't trigger re-renders, such as WebSocket and chart objects.
-  const [seedClose, setSeedClose] = useState<number | undefined>(undefined);
   const chartRef = useRef<HTMLDivElement>(null);
   const candleSeriesRef = useRef<ISeriesApi<"Candlestick"> | null>(null);
   const chartInstanceRef = useRef<IChartApi | null>(null);

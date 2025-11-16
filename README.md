@@ -99,6 +99,35 @@ Ensure you configure:
 
 Then simply push changes to `main` and watch your infrastructure update itself.
 
+## Testing
+### Test Finnhub directly
+This works with the free account.
+```sh
+wscat -c 'wss://ws.finnhub.io?token=<API-Token>'
+```
+This opens a websocket. Then subscribe to the data you want to stream in the console. Enter:
+```sh
+{"type":"subscribe","symbol":"BINANCE:BTCUSDT"}
+```
+Binance is good because it will work on the weekends too.
+### Test deployed EC2 streaming price data
+Run the following:
+```sh
+cd <repo-root>
+setopt interactivecomments
+npm install --save-dev dotenv-cli # if necessary, install dotenv if not installed
+npm run ec2:start
+npm run ec2:status # Make sure it starts, rerun until 'running'
+npm run test:ec2 # test runs for 10 seconds
+npm run ec2:stop # stop it, don't waste money
+npm run ec2:status # Make sure it stops, rerun until 'stopped'
+unsetopt interactivecomments
+```
+### Test deployed Lambda OHLCV historic candles
+```sh
+npm run test:ohlcv
+```
+
 ## Credits
 
 Created and maintained by Barnaby Falls.  

@@ -10,6 +10,7 @@
     "bundle:defold": "cd defold && /Applications/Defold.app/Contents/MacOS/Defold --bundle-html5 build && rm -rf ../public/defold/market-pulse && mkdir -p ../public/defold/market-pulse && cp -R build/* ../public/defold/market-pulse/",
     "test:wss": "wscat -c $VITE_WEBSOCKET_URL -x '{\"action\":\"subscribe\",\"symbols\":\"BINANCE:BTCUSDT\"}' -w 10",
     "test:ec2": "VITE_WEBSOCKET_URL=$(aws ssm get-parameter --name \"/stock-strategy-app/VITE_WEBSOCKET_URL\" --with-decryption --query 'Parameter.Value' --output text) npm run test:wss",
+    "test:ohlcv": "aws lambda invoke --function-name TwelveDataOhlcvFetcher --cli-binary-format raw-in-base64-out --payload '{\"queryStringParameters\":{\"symbol\":\"AAPL\"}}' /tmp/ohlcv.json > /dev/null && cat /tmp/ohlcv.json | jq -r '.body' | jq",
     "ec2:start": "dotenv -e .env -- sh -c 'aws ec2 start-instances --instance-ids \"$STREAM_PRICE_DATA_EC2_ID\" --region us-east-1 --output text'",
     "ec2:stop": "dotenv -e .env -- sh -c 'aws ec2 stop-instances --instance-ids \"$STREAM_PRICE_DATA_EC2_ID\" --region us-east-1 --output text'",
     "ec2:status": "dotenv -e .env -- sh -c 'aws ec2 describe-instances --instance-ids \"$STREAM_PRICE_DATA_EC2_ID\" --region us-east-1 --query \"Reservations[*].Instances[*].State.Name\" --output text'",
